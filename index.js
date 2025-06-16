@@ -239,28 +239,41 @@ jQuery(async () => {
         let isDragging = false,
             offset = { x: 0, y: 0 },
             wasDragged = false;
-        $button.on("mousedown", function (e) {
+
+        // 统一的事件处理函数
+        function dragStart(e) {
             isDragging = true;
             wasDragged = false;
             $button.css("cursor", "grabbing");
+
+            // 兼容触摸和鼠标事件
+            const touch = e.touches ? e.touches[0] : e;
             const buttonPos = $button.offset();
             offset = {
-                x: e.clientX - buttonPos.left,
-                y: e.clientY - buttonPos.top,
+                x: touch.clientX - buttonPos.left,
+                y: touch.clientY - buttonPos.top,
             };
-        });
-        $(document).on("mousemove", function (e) {
+            // 阻止默认行为，例如在移动端长按会选中文本
+            e.preventDefault();
+        }
+
+        function dragMove(e) {
             if (!isDragging) return;
             wasDragged = true;
+            // 阻止页面滚动
             e.preventDefault();
+
+            // 兼容触摸和鼠标事件
+            const touch = e.touches ? e.touches[0] : e;
             $button.css({
-                top: `${e.clientY - offset.y}px`,
-                left: `${e.clientX - offset.x}px`,
+                top: `${touch.clientY - offset.y}px`,
+                left: `${touch.clientX - offset.x}px`,
                 right: "auto",
                 bottom: "auto",
             });
-        });
-        $(document).on("mouseup", function () {
+        }
+
+        function dragEnd() {
             if (!isDragging) return;
             isDragging = false;
             $button.css("cursor", "grab");
@@ -271,9 +284,19 @@ jQuery(async () => {
                     left: $button.css("left"),
                 })
             );
-        });
-        $button.on("click", function () {
-            if (!wasDragged) showPopup();
+        }
+
+        // 绑定事件
+        $button.on("mousedown touchstart", dragStart);
+        $(document).on("mousemove touchmove", dragMove);
+        $(document).on("mouseup touchend", dragEnd);
+
+        $button.on("click", function (e) {
+            if (wasDragged) {
+                e.preventDefault(); // 如果拖动了，就阻止点击事件
+            } else {
+                showPopup();
+            }
         });
     }
 
