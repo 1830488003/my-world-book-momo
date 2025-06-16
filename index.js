@@ -492,6 +492,19 @@ jQuery(async () => {
                 bookList.append("<p>未找到任何世界书。</p>");
                 return;
             }
+
+            // 为每本书创建一个按钮
+            allBooks.forEach((book) => {
+                const isEnabled = enabledBooks.has(book.file_name);
+                const bookButton = $("<button></button>")
+                    .addClass("momo-book-button")
+                    .toggleClass("selected", isEnabled) // 根据启用状态添加 selected 类
+                    .text(book.name)
+                    .data("book-filename", book.file_name) // 存储文件名
+                    .on("click", handleBookClick); // 绑定点击事件
+
+                bookList.append(bookButton);
+            });
         } catch (error) {
             console.error(`[${extensionName}] 获取世界书失败:`, error);
             bookList
