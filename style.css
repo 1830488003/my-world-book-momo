@@ -311,3 +311,14 @@
     font-size: 1.2em;
     padding: 0 5px;
 }
+
+.momo-version-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.momo-version-panel p {
+    margin: 0;
+}

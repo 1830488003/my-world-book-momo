@@ -2,6 +2,22 @@
 
 ## 操作记录
 
+### 2025-06-16 22:10 (当前)
+
+- **任务**: **为插件添加更新检查与关于信息**。
+- **背景**: 用户要求为 `my-world-book-momo` 插件增加检查更新和显示版本号的功能，并添加作者的QQ群联系方式。同时，也为 `quest-system-extension` 插件补充相同的QQ群信息。
+- **解决方案**:
+    1.  **借鉴与移植**: 我分析了 `quest-system-extension` 中成熟的 `Updater` 模块，该模块包含了完整的GitHub版本检查、更新日志弹窗和一键更新逻辑。
+    2.  **UI扩展 (`my-world-book-momo/popup.html`)**: 在主弹窗界面的“编辑世界书”部分下方，新增了一个“关于与更新”区域，包含了QQ群信息、当前版本号显示 (`#momo-current-version`) 和“检查更新”按钮 (`#momo-check-update-button`)。
+    3.  **样式适配 (`my-world-book-momo/style.css`)**: 为新添加的UI元素编写了CSS样式，确保其视觉风格与插件整体保持统一。
+    4.  **逻辑集成 (`my-world-book-momo/index.js`)**:
+        -   将 `Updater` 模块的完整代码移植到 `my-world-book-momo` 的 `index.js` 中。
+        -   修改了 `Updater` 的配置，使其指向 `my-world-book-momo` 的GitHub仓库（使用占位符），并更新了其操作的DOM元素ID以匹配新的UI。
+        -   在 `initializeExtension` 函数的末尾，添加了对 `Updater` 的初始化调用，实现了页面加载时自动检查更新和按钮点击手动检查的功能。
+    5.  **补充信息 (`quest-system-extension/settings.html`)**: 在任务系统扩展的设置面板中，同样添加了包含两个QQ群号的“关于”部分，并用CSS进行了简单的居中样式调整。
+- **状态**: 已完成。
+- **说明**: 本次升级为 `my-world-book-momo` 插件带来了完整的生命周期管理能力，使其更加专业和易于维护。同时，两个插件都补充了重要的社区联系方式，方便用户交流。
+
 ### 2025-06-16 21:50 (当前)
 
 - **任务**: **重命名删除按钮**。
