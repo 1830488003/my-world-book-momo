@@ -253,8 +253,6 @@ jQuery(async () => {
                 x: touch.clientX - buttonPos.left,
                 y: touch.clientY - buttonPos.top,
             };
-            // 阻止默认行为，例如在移动端长按会选中文本
-            e.preventDefault();
         }
 
         function dragMove(e) {
