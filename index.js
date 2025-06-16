@@ -1419,7 +1419,8 @@ ${wholeBookContent}
 
         // 3. 绑定事件
         // -- 弹窗控制
-        $(`#${CLOSE_BUTTON_ID}`).on("click", closePopup);
+        // 修复移动端关闭按钮可能不触发 click 事件的问题，同时绑定 'click' 和 'touchend'
+        $(`#${CLOSE_BUTTON_ID}`).on("click touchend", closePopup);
         overlay.on("click", function (event) {
             if (event.target === this) closePopup();
         });
