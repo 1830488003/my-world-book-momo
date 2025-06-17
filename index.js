@@ -57,9 +57,15 @@ jQuery(async () => {
         momoSelectedEntryContent,
         momoSaveManualChangesBtn;
     // -- "世界生成器"子页面
-    let momoGeneratorPrompt, momoGeneratorResponse, momoSubmitGeneratorBtn;
+    let momoGeneratorPrompt,
+        momoGeneratorResponse,
+        momoSubmitGeneratorBtn,
+        momoUploadGeneratorBtn;
     // -- "故事设计师"子页面
-    let momoDesignerPrompt, momoDesignerResponse, momoSubmitDesignerBtn;
+    let momoDesignerPrompt,
+        momoDesignerResponse,
+        momoSubmitDesignerBtn,
+        momoUploadDesignerBtn;
 
     // -----------------------------------------------------------------
     // 2. SillyTavern API 封装 (依赖 TavernHelper)
@@ -974,10 +980,10 @@ ${wholeBookContent}
     }
 
     /**
-     * 处理世界生成器提交的逻辑
+     * 处理世界生成器提交的逻辑 (只生成，不上传)
      */
     async function handleGenerateWorld() {
-        const bookName = editWorldbookSelect.val(); // 从主视图的下拉菜单获取书名
+        const bookName = editWorldbookSelect.val();
         const userPromptText = momoGeneratorPrompt.val().trim();
 
         if (!bookName) {
@@ -991,116 +997,45 @@ ${wholeBookContent}
 
         momoGeneratorResponse.val("正在处理中，请稍候...");
         momoSubmitGeneratorBtn.prop("disabled", true);
+        momoUploadGeneratorBtn.prop("disabled", true); // 在生成期间禁用上传按钮
         let rawAiResponse = "";
 
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
 
-            // 1. 获取所有必要数据
             const [promptTemplate, currentEntries] = await Promise.all([
                 $.get(`${extensionFolderPath}/world-generator-prompt.txt`),
                 getLorebookEntries(bookName),
             ]);
 
             const currentBookContent = JSON.stringify(currentEntries, null, 2);
-
-            // 2. 构建最终的提示词
             let finalPrompt = promptTemplate
                 .replace("[CURRENT_WORLD_BOOK_CONTENT]", currentBookContent)
                 .replace("[USER_REQUEST]", userPromptText);
 
-            // 3. 调用AI
             rawAiResponse = await tavernHelperApi.generateRaw({
                 ordered_prompts: [{ role: "user", content: finalPrompt }],
-                max_new_tokens: 8192, // 生成任务可能需要更多token
+                max_new_tokens: 8192,
             });
+
             momoGeneratorResponse.val(rawAiResponse);
-
-            // 4. 从AI响应中提取并解析JSON
-            const cleanedJsonString = extractAndCleanJson(rawAiResponse);
-            if (!cleanedJsonString) {
-                throw new Error(
-                    "AI返回的内容为空或无法提取出有效的JSON代码块。"
-                );
-            }
-
-            const newGeneratedEntries = JSON.parse(cleanedJsonString);
-            if (!Array.isArray(newGeneratedEntries)) {
-                throw new Error("AI返回的数据解析后不是一个JSON数组。");
-            }
-
-            // 5. 将新条目与现有条目合并
-            // 为了确保所有条目都有完整的字段，我们为每个新条目补充默认值
-            const defaultEntryFields = {
-                key: [],
-                keysecondary: [],
-                comment: "",
-                constant: false,
-                vectorized: false,
-                selective: true,
-                selectiveLogic: 0,
-                addMemo: true,
-                order: 100,
-                position: 4, // 默认为 'After Character'
-                disable: false,
-                excludeRecursion: false,
-                preventRecursion: false,
-                matchPersonaDescription: false,
-                matchCharacterDescription: false,
-                matchCharacterPersonality: false,
-                matchCharacterDepthPrompt: false,
-                matchScenario: false,
-                matchCreatorNotes: false,
-                delayUntilRecursion: false,
-                probability: 100,
-                useProbability: true,
-                depth: 2,
-                group: "",
-                groupOverride: false,
-                groupWeight: 100,
-                scanDepth: null,
-                caseSensitive: null,
-                matchWholeWords: null,
-                useGroupScoring: false,
-                automationId: "",
-                role: 0,
-                sticky: 0,
-                cooldown: 0,
-                delay: 0,
-            };
-
-            const positionMap = {
-                "Before Character Definition": 0,
-                "After Character Definition": 4,
-                "At Depth": 2, // At Depth 需要额外处理，这里简化
-            };
-
-            // 5. 保存新条目
-            // 根据新策略，AI返回的已经是包含所有字段的完整JSON。
-            // 我们不再需要进行任何转换，直接逐一创建即可。
-            for (const entry of newGeneratedEntries) {
-                // TavernHelper的createLorebookEntry API 会自动分配新的UID。
-                // 为了避免任何冲突，我们必须删除AI为了上下文连贯性而生成的临时UID。
-                const entryForCreation = { ...entry };
-                delete entryForCreation.uid;
-
-                // 直接调用API使用AI生成的完整条目数据进行创建
-                await createLorebookEntry(bookName, entryForCreation);
-            }
-            alert("世界生成成功！新的条目已添加到世界书中。");
+            // 成功获取回复后，启用上传按钮
+            momoUploadGeneratorBtn.prop("disabled", false);
+            toastr.success("AI已生成回复，请检查内容后决定是否上传。");
         } catch (error) {
             console.error(`[${extensionName}] 生成世界失败:`, error);
-            alert(`操作失败: ${error.message}\n\n请检查“AI的回复”框中的内容。`);
+            momoGeneratorResponse.val(`生成失败: ${error.message}`);
+            toastr.error(`操作失败: ${error.message}`);
         } finally {
             momoSubmitGeneratorBtn.prop("disabled", false);
         }
     }
 
     /**
-     * 处理故事设计师提交的逻辑
+     * 处理故事设计师提交的逻辑 (只生成，不上传)
      */
     async function handleGenerateStory() {
-        const bookName = editWorldbookSelect.val(); // 从主视图的下拉菜单获取书名
+        const bookName = editWorldbookSelect.val();
         const userPromptText = momoDesignerPrompt.val().trim();
 
         if (!bookName) {
@@ -1114,32 +1049,59 @@ ${wholeBookContent}
 
         momoDesignerResponse.val("正在设计故事，请稍候...");
         momoSubmitDesignerBtn.prop("disabled", true);
+        momoUploadDesignerBtn.prop("disabled", true); // 在生成期间禁用上传按钮
         let rawAiResponse = "";
 
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
 
-            // 1. 获取所有必要数据
             const [promptTemplate, currentEntries] = await Promise.all([
                 $.get(`${extensionFolderPath}/story-designer-prompt.txt`),
                 getLorebookEntries(bookName),
             ]);
 
             const currentBookContent = JSON.stringify(currentEntries, null, 2);
-
-            // 2. 构建最终的提示词
             let finalPrompt = promptTemplate
                 .replace("{{world_book_entries}}", currentBookContent)
                 .replace("{{user_request}}", userPromptText);
 
-            // 3. 调用AI
             rawAiResponse = await tavernHelperApi.generateRaw({
                 ordered_prompts: [{ role: "user", content: finalPrompt }],
                 max_new_tokens: 8192,
             });
-            momoDesignerResponse.val(rawAiResponse);
 
-            // 4. 从AI响应中提取并解析JSON
+            momoDesignerResponse.val(rawAiResponse);
+            // 成功获取回复后，启用上传按钮
+            momoUploadDesignerBtn.prop("disabled", false);
+            toastr.success("AI已设计好故事，请检查内容后决定是否上传。");
+        } catch (error) {
+            console.error(`[${extensionName}] 设计故事失败:`, error);
+            momoDesignerResponse.val(`设计失败: ${error.message}`);
+            toastr.error(`操作失败: ${error.message}`);
+        } finally {
+            momoSubmitDesignerBtn.prop("disabled", false);
+        }
+    }
+
+    /**
+     * 处理上传世界生成器内容到世界书的逻辑
+     */
+    async function handleUploadWorld() {
+        const bookName = editWorldbookSelect.val();
+        const rawAiResponse = momoGeneratorResponse.val();
+
+        if (!bookName) {
+            alert("无法确定要上传到哪个世界书。");
+            return;
+        }
+        if (!rawAiResponse) {
+            alert("没有可上传的内容。");
+            return;
+        }
+
+        momoUploadGeneratorBtn.prop("disabled", true).text("上传中...");
+
+        try {
             const cleanedJsonString = extractAndCleanJson(rawAiResponse);
             if (!cleanedJsonString) {
                 throw new Error(
@@ -1152,20 +1114,74 @@ ${wholeBookContent}
                 throw new Error("AI返回的数据解析后不是一个JSON数组。");
             }
 
-            // 5. 逐一创建新条目
             for (const entry of newGeneratedEntries) {
                 const entryForCreation = { ...entry };
                 delete entryForCreation.uid;
                 await createLorebookEntry(bookName, entryForCreation);
             }
-            alert("故事设计成功！新的故事条目已添加到世界书中。");
-        } catch (error) {
-            console.error(`[${extensionName}] 设计故事失败:`, error);
             alert(
-                `操作失败: ${error.message}\n\n请检查“AI 设计的故事条目”框中的内容。`
+                `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`
             );
-        } finally {
-            momoSubmitDesignerBtn.prop("disabled", false);
+            momoGeneratorResponse.val(
+                "上传成功！可以开始下一次生成了。"
+            );
+        } catch (error) {
+            console.error(`[${extensionName}] 上传世界内容失败:`, error);
+            alert(
+                `上传失败: ${error.message}\n\n请检查“AI的回复”框中的内容是否为合法的JSON数组。`
+            );
+            // 失败后重新启用按钮，以便用户修正后重试
+            momoUploadGeneratorBtn.prop("disabled", false).text("上传到世界书");
+        }
+    }
+
+    /**
+     * 处理上传故事设计内容到世界书的逻辑
+     */
+    async function handleUploadStory() {
+        const bookName = editWorldbookSelect.val();
+        const rawAiResponse = momoDesignerResponse.val();
+
+        if (!bookName) {
+            alert("无法确定要上传到哪个世界书。");
+            return;
+        }
+        if (!rawAiResponse) {
+            alert("没有可上传的内容。");
+            return;
+        }
+
+        momoUploadDesignerBtn.prop("disabled", true).text("上传中...");
+
+        try {
+            const cleanedJsonString = extractAndCleanJson(rawAiResponse);
+            if (!cleanedJsonString) {
+                throw new Error(
+                    "AI返回的内容为空或无法提取出有效的JSON代码块。"
+                );
+            }
+
+            const newGeneratedEntries = JSON.parse(cleanedJsonString);
+            if (!Array.isArray(newGeneratedEntries)) {
+                throw new Error("AI返回的数据解析后不是一个JSON数组。");
+            }
+
+            for (const entry of newGeneratedEntries) {
+                const entryForCreation = { ...entry };
+                delete entryForCreation.uid;
+                await createLorebookEntry(bookName, entryForCreation);
+            }
+            alert(
+                `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`
+            );
+            momoDesignerResponse.val("上传成功！可以开始下一次设计了。");
+        } catch (error) {
+            console.error(`[${extensionName}] 上传故事内容失败:`, error);
+            alert(
+                `上传失败: ${error.message}\n\n请检查“AI 设计的故事条目”框中的内容是否为合法的JSON数组。`
+            );
+            // 失败后重新启用按钮
+            momoUploadDesignerBtn.prop("disabled", false).text("上传到世界书");
         }
     }
 
@@ -1411,11 +1427,13 @@ ${wholeBookContent}
         momoGeneratorPrompt = $("#momo-generator-prompt");
         momoGeneratorResponse = $("#momo-generator-response");
         momoSubmitGeneratorBtn = $("#momo-submit-generator-btn");
+        momoUploadGeneratorBtn = $("#momo-upload-generator-btn");
 
         // -- "故事设计师"子页面控件
         momoDesignerPrompt = $("#momo-designer-prompt");
         momoDesignerResponse = $("#momo-designer-response");
         momoSubmitDesignerBtn = $("#momo-submit-designer-btn");
+        momoUploadDesignerBtn = $("#momo-upload-designer-btn");
 
         // 3. 绑定事件
         // -- 弹窗控制
@@ -1493,9 +1511,11 @@ ${wholeBookContent}
 
         // -- "世界生成器" 子页面的事件绑定
         momoSubmitGeneratorBtn.on("click", handleGenerateWorld);
+        momoUploadGeneratorBtn.on("click", handleUploadWorld);
 
         // -- "故事设计师" 子页面的事件绑定
         momoSubmitDesignerBtn.on("click", handleGenerateStory);
+        momoUploadDesignerBtn.on("click", handleUploadStory);
 
         // -- 浮动按钮开关
         const isEnabled = localStorage.getItem(STORAGE_KEY_ENABLED) !== "false";
