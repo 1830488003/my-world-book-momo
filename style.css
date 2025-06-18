@@ -57,12 +57,12 @@
 
 .momo-popup-container {
     position: fixed;
-    top: 5vh; /* 移动端优先：距离顶部5% */
-    left: 5vw; /* 移动端优先：距离左侧5% */
+    top: 10vh; /* 调整：距离顶部10vh */
+    left: 10vw; /* 调整：水平居中 (100vw - 80vw) / 2 */
     z-index: 2147483646;
-    width: 90vw;
-    height: 80vh; /* 固定高度为视口的80% */
-    max-height: 90vh;
+    width: 80vw; /* 调整：宽度为80vw */
+    height: 80vh; /* 调整：高度为80vh */
+    max-height: 80vh; /* 调整：与height保持一致 */
     
     background-color: var(--main-bg-color);
     color: var(--text-color);
