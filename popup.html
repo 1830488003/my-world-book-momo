@@ -13,6 +13,7 @@
                     <button id="momo-load-preset-btn" class="momo-button">载入方案</button>
                     <button id="momo-goto-delete-btn" class="momo-button">🗑️ 删除世界书和条目</button>
                     <button id="momo-goto-modify-btn" class="momo-button">📝 修改条目</button>
+                    <button id="momo-goto-transfer-btn" class="momo-button">🔄 条目迁移</button>
                 </div>
                 <div id="momo-preset-list-container" class="momo-preset-list-container" style="display: none;"></div>
             </div>
@@ -128,6 +129,27 @@
             </div>
             <div class="momo-actions">
                 <button class="momo-button momo-back-to-main-btn">返回</button>
+            </div>
+        </div>
+
+        <!-- 条目迁移子页面 -->
+        <div id="momo-transfer-view" class="momo-section" style="display: none;">
+            <h3>🔄 条目迁移</h3>
+            <div class="momo-transfer-controls">
+                <div class="momo-grid-container">
+                    <label for="momo-source-worldbook-select">源世界书:</label>
+                    <select id="momo-source-worldbook-select" class="momo-select"></select>
+                    <label for="momo-target-worldbook-select">目标世界书:</label>
+                    <select id="momo-target-worldbook-select" class="momo-select"></select>
+                </div>
+                <label class="momo-textarea-label">选择要迁移的条目:</label>
+                <div id="momo-source-entries-container" class="momo-book-list-container" style="height: 200px; overflow-y: auto;">
+                    <p class="momo-no-tasks">请先选择一个源世界书。</p>
+                </div>
+                <div class="momo-actions">
+                    <button id="momo-transfer-entries-btn" class="momo-button">执行迁移</button>
+                    <button class="momo-button momo-back-to-main-btn">返回</button>
+                </div>
             </div>
         </div>
     </div>

@@ -275,6 +275,12 @@
     border-radius: 15px; /* 胶囊形状 */
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    /* 新增样式以显示完整文本 */
+    white-space: normal; /* 允许文本换行 */
+    text-align: left; /* 文本左对齐 */
+    height: auto; /* 高度自适应 */
+    line-height: 1.3; /* 调整行高，使其更易读 */
+    max-width: 100%; /* 确保按钮不会超出其容器 */
 }
 
 .momo-book-button.selected {
@@ -321,4 +327,70 @@
 
 .momo-version-panel p {
     margin: 0;
+}
+
+/* --- 条目迁移视图特定样式 --- */
+.momo-transfer-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 增加控件之间的间距 */
+}
+
+/* 隐藏滚动条但保留功能 (应用到新的容器) */
+#momo-source-entries-container::-webkit-scrollbar {
+    display: none;
+}
+#momo-source-entries-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* 复选框项目样式 */
+.momo-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%; /* 让每个项目占据一行 */
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.momo-checkbox-item:hover {
+    background-color: var(--main-bg-color);
+}
+
+.momo-checkbox-item input[type="checkbox"] {
+    /* 自定义复选框外观，使其更现代化 */
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--primary-accent-color);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.momo-checkbox-item input[type="checkbox"]:checked {
+    background-color: var(--primary-accent-color);
+    border-color: var(--primary-accent-hover-color);
+}
+
+/* 在选中的复选框上添加一个对勾符号 */
+.momo-checkbox-item input[type="checkbox"]:checked::after {
+    content: '✔';
+    font-size: 14px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.momo-checkbox-item label {
+    flex-grow: 1;
+    cursor: pointer;
+    color: var(--text-color);
 }

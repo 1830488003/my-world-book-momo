@@ -36,6 +36,7 @@ jQuery(async () => {
         generatorView,
         designerView,
         deleteView,
+        transferView, // 新增：条目迁移视图
         bookList,
         presetListContainer,
         overlay;
@@ -47,7 +48,11 @@ jQuery(async () => {
     let selectBookBtn, loadPresetBtn, savePresetBtn;
     // -- "编辑世界书"区域
     let editWorldbookSelect, editActionsContainer;
-    let gotoModifyBtn, gotoDeleteBtn, gotoGeneratorBtn, gotoDesignerBtn;
+    let gotoModifyBtn,
+        gotoDeleteBtn,
+        gotoGeneratorBtn,
+        gotoDesignerBtn,
+        gotoTransferBtn; // 新增：跳转到迁移页面按钮
     // -- "修改条目"子页面
     let momoWorldbookSelect,
         momoEntrySelect,
@@ -66,6 +71,11 @@ jQuery(async () => {
         momoDesignerResponse,
         momoSubmitDesignerBtn,
         momoUploadDesignerBtn;
+    // -- "条目迁移"子页面
+    let momoSourceWorldbookSelect,
+        momoTargetWorldbookSelect,
+        momoSourceEntriesContainer,
+        momoTransferEntriesBtn;
 
     // -----------------------------------------------------------------
     // 2. SillyTavern API 封装 (依赖 TavernHelper)
@@ -203,6 +213,7 @@ jQuery(async () => {
         generatorView.hide();
         designerView.hide();
         deleteView.hide();
+        transferView.hide(); // 新增
         renderPresets(); // 刷新预设列表
     }
 
@@ -219,6 +230,7 @@ jQuery(async () => {
             generatorView,
             designerView,
             deleteView,
+            transferView, // 新增
         ].forEach((v) => (v ? v.hide() : null));
 
         // 根据要显示的视图执行预加载操作
@@ -232,6 +244,9 @@ jQuery(async () => {
             if (selectedBook) {
                 momoWorldbookSelect.val(selectedBook).trigger("change");
             }
+        }
+        if (viewId === "momo-transfer-view") {
+            await populateTransferSelects();
         }
 
         // 显示目标视图
@@ -1249,10 +1264,7 @@ ${wholeBookContent}
                 entries.forEach((entry) => {
                     const entryButton = $("<button></button>")
                         .addClass("momo-book-button") // 修正：使用正确的、可切换的按钮样式
-                        .text(
-                            entry.comment.substring(0, 8) +
-                                (entry.comment.length > 8 ? "..." : "")
-                        )
+                        .text(entry.comment)
                         .attr("title", entry.comment) // 悬浮显示全名
                         .attr("data-uid", entry.uid)
                         .attr("data-book-name", bookName)
@@ -1365,6 +1377,155 @@ ${wholeBookContent}
     }
 
     // -----------------------------------------------------------------
+    // 5.6 条目迁移核心逻辑
+    // -----------------------------------------------------------------
+
+    /**
+     * 迁移视图：填充源和目标世界书的下拉选择框
+     */
+    async function populateTransferSelects() {
+        momoSourceEntriesContainer.html(
+            '<p class="momo-no-tasks">请先选择一个源世界书。</p>'
+        ); // 重置
+        try {
+            const books = await getAllLorebooks();
+            const placeholder = '<option value="">--请选择世界书--</option>';
+            momoSourceWorldbookSelect.empty().append(placeholder);
+            momoTargetWorldbookSelect.empty().append(placeholder);
+
+            books.forEach((book) => {
+                const option = `<option value="${escapeHtml(
+                    book.file_name
+                )}">${escapeHtml(book.name)}</option>`;
+                momoSourceWorldbookSelect.append(option);
+                momoTargetWorldbookSelect.append(option);
+            });
+        } catch (error) {
+            console.error(`[${extensionName}] 填充迁移视图下拉菜单失败:`, error);
+            toastr.error("加载世界书列表失败。");
+        }
+    }
+
+    /**
+     * 迁移视图：当选择源世界书后，渲染其条目
+     */
+    async function renderSourceEntries() {
+        const sourceBook = momoSourceWorldbookSelect.val();
+        if (!sourceBook) {
+            momoSourceEntriesContainer.html(
+                '<p class="momo-no-tasks">请先选择一个源世界书。</p>'
+            );
+            return;
+        }
+
+        momoSourceEntriesContainer.html("<p>加载中...</p>");
+        try {
+            if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
+            const entries = await tavernHelperApi.getLorebookEntries(sourceBook);
+
+            // 将条目数据缓存起来，以便迁移时使用
+            momoSourceEntriesContainer.data("entries", entries);
+
+            momoSourceEntriesContainer.empty();
+            if (entries.length === 0) {
+                momoSourceEntriesContainer.html(
+                    '<p class="momo-no-tasks">该世界书没有条目。</p>'
+                );
+                return;
+            }
+
+            // 使用带复选框的标签来展示条目，方便多选
+            entries.forEach((entry) => {
+                const entryId = `momo-transfer-entry-${entry.uid}`;
+                const displayName =
+                    entry.comment || `条目 UID: ${entry.uid}`;
+                const entryElement = $(`
+                    <div class="momo-checkbox-item">
+                        <input type="checkbox" id="${entryId}" value="${entry.uid}">
+                        <label for="${entryId}">${escapeHtml(
+                    displayName
+                )}</label>
+                    </div>
+                `);
+                momoSourceEntriesContainer.append(entryElement);
+            });
+        } catch (error) {
+            console.error(`[${extensionName}] 加载源条目失败:`, error);
+            toastr.error("加载源世界书的条目失败。");
+            momoSourceEntriesContainer.html(
+                '<p style="color:red;">加载条目失败！</p>'
+            );
+        }
+    }
+
+    /**
+     * 迁移视图：执行条目迁移
+     */
+    async function handleTransferEntries() {
+        const sourceBook = momoSourceWorldbookSelect.val();
+        const targetBook = momoTargetWorldbookSelect.val();
+        const selectedEntryUids = momoSourceEntriesContainer
+            .find('input[type="checkbox"]:checked')
+            .map((_, el) => $(el).val())
+            .get();
+
+        // 1. 验证
+        if (!sourceBook || !targetBook) {
+            toastr.warning("请选择源世界书和目标世界书。");
+            return;
+        }
+        if (sourceBook === targetBook) {
+            toastr.warning("源世界书和目标世界书不能是同一个。");
+            return;
+        }
+        if (selectedEntryUids.length === 0) {
+            toastr.warning("请至少选择一个要迁移的条目。");
+            return;
+        }
+
+        momoTransferEntriesBtn.prop("disabled", true).text("迁移中...");
+
+        try {
+            // 2. 获取源条目数据
+            const allSourceEntries =
+                momoSourceEntriesContainer.data("entries") || [];
+            const entriesToTransfer = allSourceEntries.filter((entry) =>
+                selectedEntryUids.includes(String(entry.uid))
+            );
+
+            if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
+
+            // 3. 逐条创建到目标世界书
+            for (const entry of entriesToTransfer) {
+                // 复制条目数据，但不包括 uid，让系统自动生成新的
+                const newEntryData = { ...entry };
+                delete newEntryData.uid;
+
+                // 调用创建接口
+                await createLorebookEntry(targetBook, newEntryData);
+            }
+
+            toastr.success(
+                `成功将 ${entriesToTransfer.length} 个条目从 "${
+                    momoSourceWorldbookSelect.find("option:selected").text()
+                }" 迁移到 "${
+                    momoTargetWorldbookSelect.find("option:selected").text()
+                }"！`
+            );
+
+            // 迁移成功后，可以考虑清空选择
+            momoSourceEntriesContainer
+                .find('input[type="checkbox"]:checked')
+                .prop("checked", false);
+        } catch (error) {
+            console.error(`[${extensionName}] 迁移条目失败:`, error);
+            toastr.error(`迁移失败: ${error.message}`);
+        } finally {
+            momoTransferEntriesBtn.prop("disabled", false).text("执行迁移");
+        }
+    }
+
+    // -----------------------------------------------------------------
     // 6. 初始化流程
     // -----------------------------------------------------------------
     async function initializeExtension() {
@@ -1397,6 +1558,7 @@ ${wholeBookContent}
         generatorView = $("#momo-generator-view");
         designerView = $("#momo-designer-view");
         deleteView = $("#momo-delete-view");
+        transferView = $("#momo-transfer-view"); // 新增
         bookList = $("#momo-book-list");
         presetListContainer = $("#momo-preset-list-container");
         overlay = $(`#${OVERLAY_ID}`);
@@ -1413,6 +1575,7 @@ ${wholeBookContent}
         gotoDeleteBtn = $("#momo-goto-delete-btn");
         gotoGeneratorBtn = $("#momo-goto-generator-btn");
         gotoDesignerBtn = $("#momo-goto-designer-btn");
+        gotoTransferBtn = $("#momo-goto-transfer-btn"); // 新增
 
         // -- "修改条目"子页面控件
         momoWorldbookSelect = $("#momo-worldbook-select");
@@ -1434,6 +1597,12 @@ ${wholeBookContent}
         momoDesignerResponse = $("#momo-designer-response");
         momoSubmitDesignerBtn = $("#momo-submit-designer-btn");
         momoUploadDesignerBtn = $("#momo-upload-designer-btn");
+
+        // -- "条目迁移"子页面控件
+        momoSourceWorldbookSelect = $("#momo-source-worldbook-select");
+        momoTargetWorldbookSelect = $("#momo-target-worldbook-select");
+        momoSourceEntriesContainer = $("#momo-source-entries-container");
+        momoTransferEntriesBtn = $("#momo-transfer-entries-btn");
 
         // 3. 绑定事件
         // -- 弹窗控制
@@ -1498,12 +1667,17 @@ ${wholeBookContent}
         });
         gotoGeneratorBtn.on("click", () => showSubView("momo-generator-view"));
         gotoDesignerBtn.on("click", () => showSubView("momo-designer-view"));
+        gotoTransferBtn.on("click", () => showSubView("momo-transfer-view")); // 新增
 
         // -- "修改条目" 子页面的事件绑定
         momoWorldbookSelect.on("change", populateEntrySelect);
         momoEntrySelect.on("change", handleEntrySelectionChange);
         momoSubmitModificationBtn.on("click", handleSubmitModification);
         momoSaveManualChangesBtn.on("click", handleManualSave);
+
+        // -- "条目迁移" 子页面的事件绑定
+        momoSourceWorldbookSelect.on("change", renderSourceEntries);
+        momoTransferEntriesBtn.on("click", handleTransferEntries);
 
         // -- 删除视图的事件绑定
         deleteWorldbookBtn.on("click", handleDeleteWorldbooks);
