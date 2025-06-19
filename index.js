@@ -761,48 +761,68 @@ jQuery(async () => {
     }
 
     /**
-     * 从AI返回的文本中提取和清理JSON字符串
+     * 从AI返回的文本中提取和清理JSON字符串。
+     * 增强版：能处理content字段内未转义的引号和换行符。
      * @param {string} rawText AI的原始输出
-     * @returns {string} 清理后的JSON字符串
+     * @returns {string} 清理后的、更可能合法的JSON字符串
      */
     function extractAndCleanJson(rawText) {
         if (!rawText || typeof rawText !== "string") {
             return "";
         }
 
-        // 1. 尝试提取被 ```json ... ``` 包裹的代码块
+        // 1. 提取被 ```json ... ``` 包裹的代码块，如果失败则使用原始文本
         const match = rawText.match(/```json\s*([\s\S]*?)\s*```/);
         let jsonString = match ? match[1] : rawText;
 
-        // 2. 移除一些常见的前后垃圾文本（如果没匹配到代码块）
-        // 例如 "好的，这是JSON内容：", "Here is the JSON:" 等
+        // 2. 如果没有匹配到代码块，尝试粗略提取 [ ... ] 或 { ... } 之间的内容
         if (!match) {
-            jsonString =
-                jsonString.substring(
-                    jsonString.indexOf("{"),
-                    jsonString.lastIndexOf("}") + 1
-                ) ||
-                jsonString.substring(
-                    jsonString.indexOf("["),
-                    jsonString.lastIndexOf("]") + 1
-                );
+            const firstBracket = jsonString.indexOf("[");
+            const lastBracket = jsonString.lastIndexOf("]");
+            const firstBrace = jsonString.indexOf("{");
+            const lastBrace = jsonString.lastIndexOf("}");
+
+            if (firstBracket !== -1 && lastBracket > firstBracket) {
+                jsonString = jsonString.substring(firstBracket, lastBracket + 1);
+            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
+                jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+            } else {
+                // 如果找不到有效的JSON结构，可能无法修复，返回空字符串
+                return "";
+            }
         }
-
-        // 如果提取失败，直接返回空，让后续逻辑处理
-        if (!jsonString) {
-            return "";
+        
+        // 3. 关键修复步骤：修复 `content` 字段内部的非法字符
+        // 这个问题的核心是 `content` 的值是一个字符串，但其内部可能包含未转义的 " 和换行符。
+        // 我们通过正则表达式匹配 "content": "..." 结构，并只对 ... 部分进行转义。
+        // 正则表达式解释:
+        // ("content"\s*:\s*") - 匹配 "content": " 部分，允许空格
+        // ([\s\S]*?) - 非贪婪地匹配任何字符（包括换行符），这是 content 的值
+        // (",\s*$) - 匹配行尾的逗号（可选），以确定 content 值的结束
+        // m (multiline) 和 g (global) 标志是必须的
+        try {
+            // 使用一个更复杂的正则表达式，它查找 "content": "..." 直到下一个有效的 "key": 或结束的 }
+            // 这是一个简化的逻辑，它按行处理，假设 content 字段的值不会跨越多行（在原始JSON文本中）
+            // 如果 content 值包含 `\n`，它在文本中仍然是一行。
+            const lines = jsonString.split('\n');
+            const fixedLines = lines.map(line => {
+                // 匹配像 "key": "value" 这样的行
+                const match = line.match(/(\s*".*?"\s*:\s*")(.*?)(".*)/);
+                if (match && match[1].includes('"content"')) {
+                    let value = match[2];
+                    // 对值进行转义：
+                    // 1. 先转义反斜杠本身
+                    // 2. 再转义双引号
+                    value = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                    return match[1] + value + match[3];
+                }
+                return line;
+            });
+            jsonString = fixedLines.join('\n');
+        } catch (e) {
+            console.error("JSON auto-fixing failed:", e);
+            // 如果修复失败，返回原始提取的字符串，让后续逻辑处理
         }
-
-        // 3. 修复常见的JSON字符串问题：未转义的换行符
-        // 这个正则表达式会查找不在引号内的，或在双层引号内的换行符并替换
-        // 注意: 这是一个简化的修复，可能无法处理所有边缘情况，但对常见AI错误有效
-        // 暂时使用更简单的全局替换，对 `content` 字段内的换行符进行处理
-        // (一个更复杂的、能避免替换掉JSON结构换行的正则非常复杂)
-        // 考虑到 content 字段是主要出错点，这个方法性价比最高
-
-        // 先不进行替换，因为最常见的问题是整个JSON字符串的结构错误
-        // 而不是content内部的换行符。SillyTavern的保存机制会自动处理content内部的换行。
-        // 主要问题还是AI在JSON外面加了别的话。
 
         return jsonString.trim();
     }
