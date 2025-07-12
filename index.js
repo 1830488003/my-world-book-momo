@@ -3,31 +3,31 @@ jQuery(async () => {
     // -----------------------------------------------------------------
     // 1. 定义常量和状态变量
     // -----------------------------------------------------------------
-    const extensionName = "my-world-book-momo";
+    const extensionName = 'my-world-book-momo';
     const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 
     // HTML-safe escape function
     const escapeHtml = (unsafe) => {
-        if (unsafe === null || typeof unsafe === "undefined") return "";
+        if (unsafe === null || typeof unsafe === 'undefined') return '';
         return String(unsafe)
-            .replace(/&/g, "&")
-            .replace(/</g, "<")
-            .replace(/>/g, ">")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(/&/g, '&')
+            .replace(/</g, '<')
+            .replace(/>/g, '>')
+            .replace(/"/g, '"')
+            .replace(/'/g, '&#039;');
     };
 
     // 存储键
-    const PRESET_STORAGE_KEY = "momo_world_book_presets";
-    const STORAGE_KEY_BUTTON_POS = "momo-world-book-button-position";
-    const STORAGE_KEY_ENABLED = "momo-world-book-enabled";
+    const PRESET_STORAGE_KEY = 'momo_world_book_presets';
+    const STORAGE_KEY_BUTTON_POS = 'momo-world-book-button-position';
+    const STORAGE_KEY_ENABLED = 'momo-world-book-enabled';
 
     // DOM IDs and Selectors
-    const BUTTON_ID = "momo-world-book-button";
-    const OVERLAY_ID = "momo-world-book-popup-overlay";
-    const POPUP_ID = "momo-world-book-popup";
-    const CLOSE_BUTTON_ID = "momo-world-book-popup-close-button";
-    const TOGGLE_ID = "#momo-world-book-enabled-toggle";
+    const BUTTON_ID = 'momo-world-book-button';
+    const OVERLAY_ID = 'momo-world-book-popup-overlay';
+    const POPUP_ID = 'momo-world-book-popup';
+    const CLOSE_BUTTON_ID = 'momo-world-book-popup-close-button';
+    const TOGGLE_ID = '#momo-world-book-enabled-toggle';
 
     // DOM 元素引用
     let mainView,
@@ -95,17 +95,17 @@ jQuery(async () => {
         for (let i = 0; i < retries; i++) {
             if (
                 window.TavernHelper &&
-                typeof window.TavernHelper.getLorebooks === "function"
+                typeof window.TavernHelper.getLorebooks === 'function'
             ) {
                 console.log(
-                    `[${extensionName}] TavernHelper API is available.`
+                    `[${extensionName}] TavernHelper API is available.`,
                 );
                 return window.TavernHelper;
             }
             await delay(interval);
         }
         throw new Error(
-            "TavernHelper API (from JS-Slash-Runner) is not available. Please ensure JS-Slash-Runner extension is installed and enabled."
+            'TavernHelper API (from JS-Slash-Runner) is not available. Please ensure JS-Slash-Runner extension is installed and enabled.',
         );
     }
 
@@ -147,11 +147,11 @@ jQuery(async () => {
     async function getLorebookEntries(bookName) {
         if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
         // 确保函数存在
-        if (typeof tavernHelperApi.getLorebookEntries !== "function") {
+        if (typeof tavernHelperApi.getLorebookEntries !== 'function') {
             console.error(
-                `[${extensionName}] TavernHelper API 中缺少 getLorebookEntries 函数。`
+                `[${extensionName}] TavernHelper API 中缺少 getLorebookEntries 函数。`,
             );
-            throw new Error("TavernHelper API不完整，无法获取条目。");
+            throw new Error('TavernHelper API不完整，无法获取条目。');
         }
         return await tavernHelperApi.getLorebookEntries(bookName);
     }
@@ -164,11 +164,11 @@ jQuery(async () => {
     async function setLorebookEntries(bookName, entries) {
         if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
         // TavernHelper 中更新条目的函数是 replaceLorebookEntries
-        if (typeof tavernHelperApi.replaceLorebookEntries !== "function") {
+        if (typeof tavernHelperApi.replaceLorebookEntries !== 'function') {
             console.error(
-                `[${extensionName}] TavernHelper API 中缺少 replaceLorebookEntries 函数。`
+                `[${extensionName}] TavernHelper API 中缺少 replaceLorebookEntries 函数。`,
             );
-            throw new Error("TavernHelper API不完整，无法更新条目。");
+            throw new Error('TavernHelper API不完整，无法更新条目。');
         }
         // 注意：replaceLorebookEntries 会完全替换所有条目
         await tavernHelperApi.replaceLorebookEntries(bookName, entries);
@@ -182,11 +182,11 @@ jQuery(async () => {
      */
     async function createLorebookEntry(bookName, entryData) {
         if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
-        if (typeof tavernHelperApi.createLorebookEntry !== "function") {
+        if (typeof tavernHelperApi.createLorebookEntry !== 'function') {
             console.error(
-                `[${extensionName}] TavernHelper API 中缺少 createLorebookEntry 函数。`
+                `[${extensionName}] TavernHelper API 中缺少 createLorebookEntry 函数。`,
             );
-            throw new Error("TavernHelper API不完整，无法创建条目。");
+            throw new Error('TavernHelper API不完整，无法创建条目。');
         }
         return await tavernHelperApi.createLorebookEntry(bookName, entryData);
     }
@@ -195,7 +195,7 @@ jQuery(async () => {
     // 3. 弹窗和视图管理
     // -----------------------------------------------------------------
     function showPopup() {
-        if (overlay) overlay.css("display", "flex"); // 使用 flex 来居中
+        if (overlay) overlay.css('display', 'flex'); // 使用 flex 来居中
         showMainView();
     }
 
@@ -234,18 +234,18 @@ jQuery(async () => {
         ].forEach((v) => (v ? v.hide() : null));
 
         // 根据要显示的视图执行预加载操作
-        if (viewId === "momo-select-view") {
+        if (viewId === 'momo-select-view') {
             await renderWorldBooks();
         }
-        if (viewId === "momo-modify-view") {
+        if (viewId === 'momo-modify-view') {
             await populateWorldbookSelect();
             // 自动选中主界面选择的书
             const selectedBook = editWorldbookSelect.val();
             if (selectedBook) {
-                momoWorldbookSelect.val(selectedBook).trigger("change");
+                momoWorldbookSelect.val(selectedBook).trigger('change');
             }
         }
-        if (viewId === "momo-transfer-view") {
+        if (viewId === 'momo-transfer-view') {
             await populateTransferSelects();
         }
 
@@ -265,7 +265,7 @@ jQuery(async () => {
         function dragStart(e) {
             isDragging = true;
             wasDragged = false;
-            $button.css("cursor", "grabbing");
+            $button.css('cursor', 'grabbing');
 
             // 兼容触摸和鼠标事件
             const touch = e.touches ? e.touches[0] : e;
@@ -287,30 +287,30 @@ jQuery(async () => {
             $button.css({
                 top: `${touch.clientY - offset.y}px`,
                 left: `${touch.clientX - offset.x}px`,
-                right: "auto",
-                bottom: "auto",
+                right: 'auto',
+                bottom: 'auto',
             });
         }
 
         function dragEnd() {
             if (!isDragging) return;
             isDragging = false;
-            $button.css("cursor", "grab");
+            $button.css('cursor', 'grab');
             localStorage.setItem(
                 STORAGE_KEY_BUTTON_POS,
                 JSON.stringify({
-                    top: $button.css("top"),
-                    left: $button.css("left"),
-                })
+                    top: $button.css('top'),
+                    left: $button.css('left'),
+                }),
             );
         }
 
         // 绑定事件
-        $button.on("mousedown touchstart", dragStart);
-        $(document).on("mousemove touchmove", dragMove);
-        $(document).on("mouseup touchend", dragEnd);
+        $button.on('mousedown touchstart', dragStart);
+        $(document).on('mousemove touchmove', dragMove);
+        $(document).on('mouseup touchend', dragEnd);
 
-        $button.on("click", function (e) {
+        $button.on('click', function (e) {
             if (wasDragged) {
                 e.preventDefault(); // 如果拖动了，就阻止点击事件
             } else {
@@ -321,23 +321,23 @@ jQuery(async () => {
 
     function handleWindowResize($button) {
         let resizeTimeout;
-        $(window).on("resize.momo-world-book", () => {
+        $(window).on('resize.momo-world-book', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 if (!$button.length) return;
                 const maxLeft = $(window).width() - $button.outerWidth(),
                     maxTop = $(window).height() - $button.outerHeight();
                 let { left, top } = $button.offset();
-                if (left > maxLeft) $button.css("left", `${maxLeft}px`);
-                if (left < 0) $button.css("left", "0px");
-                if (top > maxTop) $button.css("top", `${maxTop}px`);
-                if (top < 0) $button.css("top", "0px");
+                if (left > maxLeft) $button.css('left', `${maxLeft}px`);
+                if (left < 0) $button.css('left', '0px');
+                if (top > maxTop) $button.css('top', `${maxTop}px`);
+                if (top < 0) $button.css('top', '0px');
                 localStorage.setItem(
                     STORAGE_KEY_BUTTON_POS,
                     JSON.stringify({
-                        top: $button.css("top"),
-                        left: $button.css("left"),
-                    })
+                        top: $button.css('top'),
+                        left: $button.css('left'),
+                    }),
                 );
             }, 150);
         });
@@ -345,17 +345,17 @@ jQuery(async () => {
 
     function initializeFloatingButton() {
         if ($(`#${BUTTON_ID}`).length) return;
-        $("body").append(
-            `<div id="${BUTTON_ID}" title="我的世界书管理器"><i class="fa-solid fa-book-open"></i></div>`
+        $('body').append(
+            `<div id="${BUTTON_ID}" title="我的世界书管理器"><i class="fa-solid fa-book-open"></i></div>`,
         );
         const $button = $(`#${BUTTON_ID}`);
         const savedPos = JSON.parse(
-            localStorage.getItem(STORAGE_KEY_BUTTON_POS)
+            localStorage.getItem(STORAGE_KEY_BUTTON_POS),
         );
         $button.css(
             savedPos
                 ? { top: savedPos.top, left: savedPos.left }
-                : { top: "150px", right: "20px" }
+                : { top: '150px', right: '20px' },
         );
         makeButtonDraggable($button);
         handleWindowResize($button);
@@ -363,25 +363,25 @@ jQuery(async () => {
 
     function destroyFloatingButton() {
         $(`#${BUTTON_ID}`).remove();
-        $(window).off("resize.momo-world-book");
+        $(window).off('resize.momo-world-book');
     }
 
     // -----------------------------------------------------------------
     // 4.5 更新器模块 (移植自 quest-system-extension)
     // -----------------------------------------------------------------
     const Updater = {
-        gitRepoOwner: "1830488003", // 假设的仓库所有者
-        gitRepoName: "my-world-book-momo", // 假设的仓库名
-        currentVersion: "0.0.0",
-        latestVersion: "0.0.0",
-        changelogContent: "",
+        gitRepoOwner: '1830488003', // 假设的仓库所有者
+        gitRepoName: 'my-world-book-momo', // 假设的仓库名
+        currentVersion: '0.0.0',
+        latestVersion: '0.0.0',
+        changelogContent: '',
 
         async fetchRawFileFromGitHub(filePath) {
             const url = `https://raw.githubusercontent.com/${this.gitRepoOwner}/${this.gitRepoName}/main/${filePath}`;
-            const response = await fetch(url, { cache: "no-cache" });
+            const response = await fetch(url, { cache: 'no-cache' });
             if (!response.ok) {
                 throw new Error(
-                    `Failed to fetch ${filePath} from GitHub: ${response.statusText}`
+                    `Failed to fetch ${filePath} from GitHub: ${response.statusText}`,
                 );
             }
             return response.text();
@@ -389,16 +389,16 @@ jQuery(async () => {
 
         parseVersion(content) {
             try {
-                return JSON.parse(content).version || "0.0.0";
+                return JSON.parse(content).version || '0.0.0';
             } catch (error) {
-                console.error("Failed to parse version:", error);
-                return "0.0.0";
+                console.error('Failed to parse version:', error);
+                return '0.0.0';
             }
         },
 
         compareVersions(v1, v2) {
-            const parts1 = v1.split(".").map(Number);
-            const parts2 = v2.split(".").map(Number);
+            const parts1 = v1.split('.').map(Number);
+            const parts2 = v2.split('.').map(Number);
             for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
                 const p1 = parts1[i] || 0;
                 const p2 = parts2[i] || 0;
@@ -413,19 +413,19 @@ jQuery(async () => {
             const context = SillyTavern.getContext();
             const { getRequestHeaders } = context.common;
             const { extension_types } = context.extensions;
-            toastr.info("正在开始更新...");
+            toastr.info('正在开始更新...');
             try {
-                const response = await fetch("/api/extensions/update", {
-                    method: "POST",
+                const response = await fetch('/api/extensions/update', {
+                    method: 'POST',
                     headers: getRequestHeaders(),
                     body: JSON.stringify({
                         extensionName: extensionName, // 使用全局的 extensionName
-                        global: extension_types[extensionName] === "global",
+                        global: extension_types[extensionName] === 'global',
                     }),
                 });
                 if (!response.ok) throw new Error(await response.text());
 
-                toastr.success("更新成功！将在3秒后刷新页面应用更改。");
+                toastr.success('更新成功！将在3秒后刷新页面应用更改。');
                 setTimeout(() => location.reload(), 3000);
             } catch (error) {
                 toastr.error(`更新失败: ${error.message}`);
@@ -436,9 +436,8 @@ jQuery(async () => {
             const context = SillyTavern.getContext();
             const { POPUP_TYPE, callGenericPopup } = context.popup;
             try {
-                this.changelogContent = await this.fetchRawFileFromGitHub(
-                    "CHANGELOG.md"
-                );
+                this.changelogContent =
+                    await this.fetchRawFileFromGitHub('CHANGELOG.md');
             } catch (error) {
                 this.changelogContent = `发现新版本 ${this.latestVersion}！您想现在更新吗？`;
             }
@@ -447,11 +446,11 @@ jQuery(async () => {
                     this.changelogContent,
                     POPUP_TYPE.CONFIRM,
                     {
-                        okButton: "立即更新",
-                        cancelButton: "稍后",
+                        okButton: '立即更新',
+                        cancelButton: '稍后',
                         wide: true,
                         large: true,
-                    }
+                    },
                 )
             ) {
                 await this.performUpdate();
@@ -459,44 +458,43 @@ jQuery(async () => {
         },
 
         async checkForUpdates(isManual = false) {
-            const updateButton = $("#momo-check-update-button");
+            const updateButton = $('#momo-check-update-button');
             if (isManual) {
                 updateButton
-                    .prop("disabled", true)
+                    .prop('disabled', true)
                     .html('<i class="fas fa-spinner fa-spin"></i> 检查中...');
             }
             try {
                 const localManifestText = await (
                     await fetch(
-                        `/${extensionFolderPath}/manifest.json?t=${Date.now()}`
+                        `/${extensionFolderPath}/manifest.json?t=${Date.now()}`,
                     )
                 ).text();
                 this.currentVersion = this.parseVersion(localManifestText);
-                $("#momo-current-version").text(this.currentVersion);
+                $('#momo-current-version').text(this.currentVersion);
 
-                const remoteManifestText = await this.fetchRawFileFromGitHub(
-                    "manifest.json"
-                );
+                const remoteManifestText =
+                    await this.fetchRawFileFromGitHub('manifest.json');
                 this.latestVersion = this.parseVersion(remoteManifestText);
 
                 if (
                     this.compareVersions(
                         this.latestVersion,
-                        this.currentVersion
+                        this.currentVersion,
                     ) > 0
                 ) {
                     updateButton
                         .html(
-                            `<i class="fa-solid fa-gift"></i> 发现新版 ${this.latestVersion}!`
+                            `<i class="fa-solid fa-gift"></i> 发现新版 ${this.latestVersion}!`,
                         )
-                        .off("click")
-                        .on("click", () => this.showUpdateConfirmDialog());
+                        .off('click')
+                        .on('click', () => this.showUpdateConfirmDialog());
                     if (isManual)
                         toastr.success(
-                            `发现新版本 ${this.latestVersion}！点击按钮进行更新。`
+                            `发现新版本 ${this.latestVersion}！点击按钮进行更新。`,
                         );
                 } else {
-                    if (isManual) toastr.info("您当前已是最新版本。");
+                    if (isManual) toastr.info('您当前已是最新版本。');
                 }
             } catch (error) {
                 if (isManual) toastr.error(`检查更新失败: ${error.message}`);
@@ -505,13 +503,13 @@ jQuery(async () => {
                     isManual &&
                     this.compareVersions(
                         this.latestVersion,
-                        this.currentVersion
+                        this.currentVersion,
                     ) <= 0
                 ) {
                     updateButton
-                        .prop("disabled", false)
+                        .prop('disabled', false)
                         .html(
-                            '<i class="fa-solid fa-cloud-arrow-down"></i> 检查更新'
+                            '<i class="fa-solid fa-cloud-arrow-down"></i> 检查更新',
                         );
                 }
             }
@@ -522,7 +520,7 @@ jQuery(async () => {
     // 5. 世界书 & 预设核心逻辑
     // -----------------------------------------------------------------
     async function renderWorldBooks() {
-        bookList.empty().append("<p>加载中...</p>");
+        bookList.empty().append('<p>加载中...</p>');
         try {
             const [allBooks, settings] = await Promise.all([
                 getAllLorebooks(),
@@ -531,19 +529,19 @@ jQuery(async () => {
             const enabledBooks = new Set(settings.selected_global_lorebooks);
             bookList.empty();
             if (allBooks.length === 0) {
-                bookList.append("<p>未找到任何世界书。</p>");
+                bookList.append('<p>未找到任何世界书。</p>');
                 return;
             }
 
             // 为每本书创建一个按钮
             allBooks.forEach((book) => {
                 const isEnabled = enabledBooks.has(book.file_name);
-                const bookButton = $("<button></button>")
-                    .addClass("momo-book-button")
-                    .toggleClass("selected", isEnabled) // 根据启用状态添加 selected 类
+                const bookButton = $('<button></button>')
+                    .addClass('momo-book-button')
+                    .toggleClass('selected', isEnabled) // 根据启用状态添加 selected 类
                     .text(book.name)
-                    .data("book-filename", book.file_name) // 存储文件名
-                    .on("click", handleBookClick); // 绑定点击事件
+                    .data('book-filename', book.file_name) // 存储文件名
+                    .on('click', handleBookClick); // 绑定点击事件
 
                 bookList.append(bookButton);
             });
@@ -552,22 +550,22 @@ jQuery(async () => {
             bookList
                 .empty()
                 .append(
-                    `<p style="color:red;">获取世界书失败: ${error.message}</p>`
+                    `<p style="color:red;">获取世界书失败: ${error.message}</p>`,
                 );
         }
     }
 
     async function handleBookClick() {
         const button = $(this),
-            bookFileName = button.data("book-filename"),
-            isSelected = button.hasClass("selected");
-        button.toggleClass("selected");
+            bookFileName = button.data('book-filename'),
+            isSelected = button.hasClass('selected');
+        button.toggleClass('selected');
         try {
             const settings = await getLorebookSettings();
             let enabledBooks = settings.selected_global_lorebooks || [];
             if (isSelected) {
                 enabledBooks = enabledBooks.filter(
-                    (name) => name !== bookFileName
+                    (name) => name !== bookFileName,
                 );
             } else if (!enabledBooks.includes(bookFileName)) {
                 enabledBooks.push(bookFileName);
@@ -577,8 +575,8 @@ jQuery(async () => {
             });
         } catch (error) {
             console.error(`[${extensionName}] 更新世界书设置失败:`, error);
-            button.toggleClass("selected"); // 操作失败，恢复按钮状态
-            alert("更新世界书状态失败！");
+            button.toggleClass('selected'); // 操作失败，恢复按钮状态
+            alert('更新世界书状态失败！');
         }
     }
 
@@ -614,18 +612,18 @@ jQuery(async () => {
 
         presets.forEach((preset) => {
             const item = $(
-                `<div class="momo-preset-item"><span>${preset.name}</span><div><button class="momo-delete-preset-btn" title="删除预设">&times;</button></div></div>`
+                `<div class="momo-preset-item"><span>${preset.name}</span><div><button class="momo-delete-preset-btn" title="删除预设">&times;</button></div></div>`,
             );
 
             // 点击预设项（非删除按钮）来应用预设
-            item.on("click", async (e) => {
-                if (!$(e.target).hasClass("momo-delete-preset-btn")) {
+            item.on('click', async (e) => {
+                if (!$(e.target).hasClass('momo-delete-preset-btn')) {
                     await applyPreset(preset.books);
                 }
             });
 
             // 点击删除按钮
-            item.find(".momo-delete-preset-btn").on("click", (e) => {
+            item.find('.momo-delete-preset-btn').on('click', (e) => {
                 e.stopPropagation();
                 if (confirm(`确定删除预设 "${preset.name}"?`)) {
                     deletePreset(preset.name);
@@ -639,7 +637,7 @@ jQuery(async () => {
 
     async function applyPreset(bookFileNames) {
         if (!Array.isArray(bookFileNames)) {
-            alert("预设格式错误！");
+            alert('预设格式错误！');
             return;
         }
         try {
@@ -649,14 +647,14 @@ jQuery(async () => {
             await setLorebookSettings({
                 selected_global_lorebooks: bookFileNames,
             });
-            alert("预设加载成功！");
+            alert('预设加载成功！');
             // 如果选择视图是可见的，刷新它以反映最新状态
-            if (selectView.is(":visible")) {
+            if (selectView.is(':visible')) {
                 await renderWorldBooks();
             }
         } catch (error) {
             console.error(`[${extensionName}] 应用预设失败:`, error);
-            alert("应用预设失败！");
+            alert('应用预设失败！');
         }
     }
 
@@ -672,18 +670,18 @@ jQuery(async () => {
             books.forEach((book) => {
                 editWorldbookSelect.append(
                     `<option value="${escapeHtml(book.file_name)}">${escapeHtml(
-                        book.name
-                    )}</option>`
+                        book.name,
+                    )}</option>`,
                 );
             });
         } catch (error) {
             console.error(
                 `[${extensionName}] 填充编辑区世界书下拉菜单失败:`,
-                error
+                error,
             );
             editWorldbookSelect
                 .empty()
-                .append(`<option value="">加载失败</option>`);
+                .append('<option value="">加载失败</option>');
         }
     }
 
@@ -699,8 +697,8 @@ jQuery(async () => {
             books.forEach((book) => {
                 momoWorldbookSelect.append(
                     `<option value="${escapeHtml(book.file_name)}">${escapeHtml(
-                        book.name
-                    )}</option>`
+                        book.name,
+                    )}</option>`,
                 );
             });
             momoEntrySelect
@@ -710,7 +708,7 @@ jQuery(async () => {
             console.error(`[${extensionName}] 填充世界书下拉菜单失败:`, error);
             momoWorldbookSelect
                 .empty()
-                .append(`<option value="">加载失败</option>`);
+                .append('<option value="">加载失败</option>');
         }
     }
 
@@ -719,7 +717,7 @@ jQuery(async () => {
      */
     async function populateEntrySelect() {
         const selectedBook = momoWorldbookSelect.val();
-        momoSelectedEntryContent.val(""); // 清空内容显示区
+        momoSelectedEntryContent.val(''); // 清空内容显示区
         if (!selectedBook) {
             momoEntrySelect
                 .empty()
@@ -731,32 +729,32 @@ jQuery(async () => {
         try {
             const entries = await getLorebookEntries(selectedBook);
             // 将条目存储在select元素上以便后续使用
-            momoEntrySelect.data("entries", entries);
+            momoEntrySelect.data('entries', entries);
             momoEntrySelect.empty();
             if (entries.length === 0) {
                 momoEntrySelect.append(
-                    '<option value="">该世界书没有条目</option>'
+                    '<option value="">该世界书没有条目</option>',
                 );
                 return;
             }
 
             momoEntrySelect.append(
-                '<option value="">--选择一个条目 (或不选)--</option>'
+                '<option value="">--选择一个条目 (或不选)--</option>',
             );
             entries.forEach((entry) => {
                 const displayName = entry.comment || `条目 UID: ${entry.uid}`;
                 momoEntrySelect.append(
                     `<option value="${entry.uid}">${escapeHtml(
-                        displayName
-                    )}</option>`
+                        displayName,
+                    )}</option>`,
                 );
             });
         } catch (error) {
             console.error(`[${extensionName}] 填充条目下拉菜单失败:`, error);
             momoEntrySelect
                 .empty()
-                .append(`<option value="">加载条目失败</option>`);
-            momoEntrySelect.data("entries", []); // 清空缓存
+                .append('<option value="">加载条目失败</option>');
+            momoEntrySelect.data('entries', []); // 清空缓存
         }
     }
 
@@ -767,8 +765,8 @@ jQuery(async () => {
      * @returns {string} 清理后的、更可能合法的JSON字符串
      */
     function extractAndCleanJson(rawText) {
-        if (!rawText || typeof rawText !== "string") {
-            return "";
+        if (!rawText || typeof rawText !== 'string') {
+            return '';
         }
 
         // 1. 提取被 ```json ... ``` 包裹的代码块，如果失败则使用原始文本
@@ -777,21 +775,24 @@ jQuery(async () => {
 
         // 2. 如果没有匹配到代码块，尝试粗略提取 [ ... ] 或 { ... } 之间的内容
         if (!match) {
-            const firstBracket = jsonString.indexOf("[");
-            const lastBracket = jsonString.lastIndexOf("]");
-            const firstBrace = jsonString.indexOf("{");
-            const lastBrace = jsonString.lastIndexOf("}");
+            const firstBracket = jsonString.indexOf('[');
+            const lastBracket = jsonString.lastIndexOf(']');
+            const firstBrace = jsonString.indexOf('{');
+            const lastBrace = jsonString.lastIndexOf('}');
 
             if (firstBracket !== -1 && lastBracket > firstBracket) {
-                jsonString = jsonString.substring(firstBracket, lastBracket + 1);
+                jsonString = jsonString.substring(
+                    firstBracket,
+                    lastBracket + 1,
+                );
             } else if (firstBrace !== -1 && lastBrace > firstBrace) {
                 jsonString = jsonString.substring(firstBrace, lastBrace + 1);
             } else {
                 // 如果找不到有效的JSON结构，可能无法修复，返回空字符串
-                return "";
+                return '';
             }
         }
-        
+
         // 3. 关键修复步骤：修复 `content` 字段内部的非法字符
         // 这个问题的核心是 `content` 的值是一个字符串，但其内部可能包含未转义的 " 和换行符。
         // 我们通过正则表达式匹配 "content": "..." 结构，并只对 ... 部分进行转义。
@@ -805,7 +806,7 @@ jQuery(async () => {
             // 这是一个简化的逻辑，它按行处理，假设 content 字段的值不会跨越多行（在原始JSON文本中）
             // 如果 content 值包含 `\n`，它在文本中仍然是一行。
             const lines = jsonString.split('\n');
-            const fixedLines = lines.map(line => {
+            const fixedLines = lines.map((line) => {
                 // 匹配像 "key": "value" 这样的行
                 const match = line.match(/(\s*".*?"\s*:\s*")(.*?)(".*)/);
                 if (match && match[1].includes('"content"')) {
@@ -820,7 +821,7 @@ jQuery(async () => {
             });
             jsonString = fixedLines.join('\n');
         } catch (e) {
-            console.error("JSON auto-fixing failed:", e);
+            console.error('JSON auto-fixing failed:', e);
             // 如果修复失败，返回原始提取的字符串，让后续逻辑处理
         }
 
@@ -832,17 +833,17 @@ jQuery(async () => {
      */
     function handleEntrySelectionChange() {
         const selectedUid = momoEntrySelect.val();
-        const entries = momoEntrySelect.data("entries") || [];
+        const entries = momoEntrySelect.data('entries') || [];
         if (selectedUid) {
             const selectedEntry = entries.find((e) => e.uid == selectedUid);
             if (selectedEntry) {
                 // 显示条目的 'content' 字段
-                momoSelectedEntryContent.val(selectedEntry.content || "");
+                momoSelectedEntryContent.val(selectedEntry.content || '');
             } else {
-                momoSelectedEntryContent.val("");
+                momoSelectedEntryContent.val('');
             }
         } else {
-            momoSelectedEntryContent.val("");
+            momoSelectedEntryContent.val('');
         }
     }
 
@@ -855,7 +856,7 @@ jQuery(async () => {
         const modifiedContent = momoSelectedEntryContent.val();
 
         if (!bookName || !entryUid) {
-            alert("请先选择一个世界书和一个具体的条目来保存。");
+            alert('请先选择一个世界书和一个具体的条目来保存。');
             return;
         }
 
@@ -866,7 +867,7 @@ jQuery(async () => {
             const entryIndex = allEntries.findIndex((e) => e.uid == entryUid);
 
             if (entryIndex === -1) {
-                throw new Error("找不到要更新的条目。");
+                throw new Error('找不到要更新的条目。');
             }
 
             // 更新指定条目的content字段
@@ -875,9 +876,9 @@ jQuery(async () => {
             // 将修改后的整个条目数组写回
             await setLorebookEntries(bookName, allEntries);
 
-            alert("手动修改已成功保存！");
+            alert('手动修改已成功保存！');
             // 可选：更新缓存的条目数据以保持同步
-            momoEntrySelect.data("entries", allEntries);
+            momoEntrySelect.data('entries', allEntries);
         } catch (error) {
             console.error(`[${extensionName}] 手动保存失败:`, error);
             alert(`手动保存失败: ${error.message}`);
@@ -893,17 +894,17 @@ jQuery(async () => {
         const userPromptText = momoUserPrompt.val().trim();
 
         if (!bookName) {
-            alert("请先选择一个世界书。");
+            alert('请先选择一个世界书。');
             return;
         }
         if (!userPromptText) {
-            alert("请输入你的修改要求。");
+            alert('请输入你的修改要求。');
             return;
         }
 
-        momoAiResponse.val("正在处理中，请稍候...");
-        momoSubmitModificationBtn.prop("disabled", true);
-        let rawAiResponse = "";
+        momoAiResponse.val('正在处理中，请稍候...');
+        momoSubmitModificationBtn.prop('disabled', true);
+        let rawAiResponse = '';
 
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
@@ -911,7 +912,7 @@ jQuery(async () => {
             const allEntries = await getLorebookEntries(bookName);
             const wholeBookContent = JSON.stringify(allEntries, null, 2);
             let targetEntry = null;
-            let finalPrompt = "";
+            let finalPrompt = '';
 
             // 通用指令头部
             const promptHeader = `你是一个专业的SillyTavern世界书JSON数据工程师。
@@ -926,7 +927,7 @@ jQuery(async () => {
                 targetEntry = allEntries.find((e) => e.uid == entryUid);
                 if (!targetEntry)
                     throw new Error(
-                        `未在世界书 "${bookName}" 中找到 UID 为 ${entryUid} 的条目。`
+                        `未在世界书 "${bookName}" 中找到 UID 为 ${entryUid} 的条目。`,
                     );
 
                 const targetEntryContent = JSON.stringify(targetEntry, null, 2);
@@ -965,7 +966,7 @@ ${wholeBookContent}
             }
 
             rawAiResponse = await tavernHelperApi.generateRaw({
-                ordered_prompts: [{ role: "user", content: finalPrompt }],
+                ordered_prompts: [{ role: 'user', content: finalPrompt }],
                 max_new_tokens: 4096, // 根据需要调整
             });
             momoAiResponse.val(rawAiResponse); // 立即显示原始回复
@@ -973,7 +974,7 @@ ${wholeBookContent}
             const cleanedJsonString = extractAndCleanJson(rawAiResponse);
             if (!cleanedJsonString) {
                 throw new Error(
-                    "AI返回的内容为空或无法提取出有效的JSON代码块。"
+                    'AI返回的内容为空或无法提取出有效的JSON代码块。',
                 );
             }
 
@@ -982,7 +983,7 @@ ${wholeBookContent}
 
             if (entryUid && targetEntry) {
                 const entryIndex = allEntries.findIndex(
-                    (e) => e.uid == entryUid
+                    (e) => e.uid == entryUid,
                 );
                 // 保护关键字段不被修改
                 const updatedEntry = {
@@ -995,22 +996,22 @@ ${wholeBookContent}
                 newEntries = allEntries;
             } else {
                 if (!Array.isArray(updatedData)) {
-                    throw new Error("AI未返回预期的JSON数组。请检查AI的回复。");
+                    throw new Error('AI未返回预期的JSON数组。请检查AI的回复。');
                 }
                 newEntries = updatedData;
             }
 
             await setLorebookEntries(bookName, newEntries);
-            alert("世界书已成功更新！");
+            alert('世界书已成功更新！');
         } catch (error) {
             console.error(`[${extensionName}] 修改世界书失败:`, error);
             // 尝试提取清理后的JSON以供调试
             const cleanedForDebug = extractAndCleanJson(rawAiResponse);
             alert(
-                `操作失败: ${error.message}\n\n请检查“AI的回复”框中的内容。\n\n尝试解析的数据如下 (如果为空则表示提取失败):\n${cleanedForDebug}`
+                `操作失败: ${error.message}\n\n请检查“AI的回复”框中的内容。\n\n尝试解析的数据如下 (如果为空则表示提取失败):\n${cleanedForDebug}`,
             );
         } finally {
-            momoSubmitModificationBtn.prop("disabled", false);
+            momoSubmitModificationBtn.prop('disabled', false);
         }
     }
 
@@ -1022,18 +1023,18 @@ ${wholeBookContent}
         const userPromptText = momoGeneratorPrompt.val().trim();
 
         if (!bookName) {
-            alert("请返回主页，先选择一个要进行生成的世界书。");
+            alert('请返回主页，先选择一个要进行生成的世界书。');
             return;
         }
         if (!userPromptText) {
-            alert("请输入你的生成要求。");
+            alert('请输入你的生成要求。');
             return;
         }
 
-        momoGeneratorResponse.val("正在处理中，请稍候...");
-        momoSubmitGeneratorBtn.prop("disabled", true);
-        momoUploadGeneratorBtn.prop("disabled", true); // 在生成期间禁用上传按钮
-        let rawAiResponse = "";
+        momoGeneratorResponse.val('正在处理中，请稍候...');
+        momoSubmitGeneratorBtn.prop('disabled', true);
+        momoUploadGeneratorBtn.prop('disabled', true); // 在生成期间禁用上传按钮
+        let rawAiResponse = '';
 
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
@@ -1045,24 +1046,24 @@ ${wholeBookContent}
 
             const currentBookContent = JSON.stringify(currentEntries, null, 2);
             let finalPrompt = promptTemplate
-                .replace("[CURRENT_WORLD_BOOK_CONTENT]", currentBookContent)
-                .replace("[USER_REQUEST]", userPromptText);
+                .replace('[CURRENT_WORLD_BOOK_CONTENT]', currentBookContent)
+                .replace('[USER_REQUEST]', userPromptText);
 
             rawAiResponse = await tavernHelperApi.generateRaw({
-                ordered_prompts: [{ role: "user", content: finalPrompt }],
+                ordered_prompts: [{ role: 'user', content: finalPrompt }],
                 max_new_tokens: 8192,
             });
 
             momoGeneratorResponse.val(rawAiResponse);
             // 成功获取回复后，启用上传按钮
-            momoUploadGeneratorBtn.prop("disabled", false);
-            toastr.success("AI已生成回复，请检查内容后决定是否上传。");
+            momoUploadGeneratorBtn.prop('disabled', false);
+            toastr.success('AI已生成回复，请检查内容后决定是否上传。');
         } catch (error) {
             console.error(`[${extensionName}] 生成世界失败:`, error);
             momoGeneratorResponse.val(`生成失败: ${error.message}`);
             toastr.error(`操作失败: ${error.message}`);
         } finally {
-            momoSubmitGeneratorBtn.prop("disabled", false);
+            momoSubmitGeneratorBtn.prop('disabled', false);
         }
     }
 
@@ -1074,18 +1075,18 @@ ${wholeBookContent}
         const userPromptText = momoDesignerPrompt.val().trim();
 
         if (!bookName) {
-            alert("请返回主页，先选择一个要进行设计的故事所在的世界书。");
+            alert('请返回主页，先选择一个要进行设计的故事所在的世界书。');
             return;
         }
         if (!userPromptText) {
-            alert("请输入你的故事概念。");
+            alert('请输入你的故事概念。');
             return;
         }
 
-        momoDesignerResponse.val("正在设计故事，请稍候...");
-        momoSubmitDesignerBtn.prop("disabled", true);
-        momoUploadDesignerBtn.prop("disabled", true); // 在生成期间禁用上传按钮
-        let rawAiResponse = "";
+        momoDesignerResponse.val('正在设计故事，请稍候...');
+        momoSubmitDesignerBtn.prop('disabled', true);
+        momoUploadDesignerBtn.prop('disabled', true); // 在生成期间禁用上传按钮
+        let rawAiResponse = '';
 
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
@@ -1097,24 +1098,24 @@ ${wholeBookContent}
 
             const currentBookContent = JSON.stringify(currentEntries, null, 2);
             let finalPrompt = promptTemplate
-                .replace("{{world_book_entries}}", currentBookContent)
-                .replace("{{user_request}}", userPromptText);
+                .replace('{{world_book_entries}}', currentBookContent)
+                .replace('{{user_request}}', userPromptText);
 
             rawAiResponse = await tavernHelperApi.generateRaw({
-                ordered_prompts: [{ role: "user", content: finalPrompt }],
+                ordered_prompts: [{ role: 'user', content: finalPrompt }],
                 max_new_tokens: 8192,
             });
 
             momoDesignerResponse.val(rawAiResponse);
             // 成功获取回复后，启用上传按钮
-            momoUploadDesignerBtn.prop("disabled", false);
-            toastr.success("AI已设计好故事，请检查内容后决定是否上传。");
+            momoUploadDesignerBtn.prop('disabled', false);
+            toastr.success('AI已设计好故事，请检查内容后决定是否上传。');
         } catch (error) {
             console.error(`[${extensionName}] 设计故事失败:`, error);
             momoDesignerResponse.val(`设计失败: ${error.message}`);
             toastr.error(`操作失败: ${error.message}`);
         } finally {
-            momoSubmitDesignerBtn.prop("disabled", false);
+            momoSubmitDesignerBtn.prop('disabled', false);
         }
     }
 
@@ -1126,27 +1127,27 @@ ${wholeBookContent}
         const rawAiResponse = momoGeneratorResponse.val();
 
         if (!bookName) {
-            alert("无法确定要上传到哪个世界书。");
+            alert('无法确定要上传到哪个世界书。');
             return;
         }
         if (!rawAiResponse) {
-            alert("没有可上传的内容。");
+            alert('没有可上传的内容。');
             return;
         }
 
-        momoUploadGeneratorBtn.prop("disabled", true).text("上传中...");
+        momoUploadGeneratorBtn.prop('disabled', true).text('上传中...');
 
         try {
             const cleanedJsonString = extractAndCleanJson(rawAiResponse);
             if (!cleanedJsonString) {
                 throw new Error(
-                    "AI返回的内容为空或无法提取出有效的JSON代码块。"
+                    'AI返回的内容为空或无法提取出有效的JSON代码块。',
                 );
             }
 
             const newGeneratedEntries = JSON.parse(cleanedJsonString);
             if (!Array.isArray(newGeneratedEntries)) {
-                throw new Error("AI返回的数据解析后不是一个JSON数组。");
+                throw new Error('AI返回的数据解析后不是一个JSON数组。');
             }
 
             for (const entry of newGeneratedEntries) {
@@ -1155,18 +1156,16 @@ ${wholeBookContent}
                 await createLorebookEntry(bookName, entryForCreation);
             }
             alert(
-                `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`
+                `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`,
             );
-            momoGeneratorResponse.val(
-                "上传成功！可以开始下一次生成了。"
-            );
+            momoGeneratorResponse.val('上传成功！可以开始下一次生成了。');
         } catch (error) {
             console.error(`[${extensionName}] 上传世界内容失败:`, error);
             alert(
-                `上传失败: ${error.message}\n\n请检查“AI的回复”框中的内容是否为合法的JSON数组。`
+                `上传失败: ${error.message}\n\n请检查“AI的回复”框中的内容是否为合法的JSON数组。`,
             );
             // 失败后重新启用按钮，以便用户修正后重试
-            momoUploadGeneratorBtn.prop("disabled", false).text("上传到世界书");
+            momoUploadGeneratorBtn.prop('disabled', false).text('上传到世界书');
         }
     }
 
@@ -1178,27 +1177,27 @@ ${wholeBookContent}
         const rawAiResponse = momoDesignerResponse.val();
 
         if (!bookName) {
-            alert("无法确定要上传到哪个世界书。");
+            alert('无法确定要上传到哪个世界书。');
             return;
         }
         if (!rawAiResponse) {
-            alert("没有可上传的内容。");
+            alert('没有可上传的内容。');
             return;
         }
 
-        momoUploadDesignerBtn.prop("disabled", true).text("上传中...");
+        momoUploadDesignerBtn.prop('disabled', true).text('上传中...');
 
         try {
             const cleanedJsonString = extractAndCleanJson(rawAiResponse);
             if (!cleanedJsonString) {
                 throw new Error(
-                    "AI返回的内容为空或无法提取出有效的JSON代码块。"
+                    'AI返回的内容为空或无法提取出有效的JSON代码块。',
                 );
             }
 
             const newGeneratedEntries = JSON.parse(cleanedJsonString);
             if (!Array.isArray(newGeneratedEntries)) {
-                throw new Error("AI返回的数据解析后不是一个JSON数组。");
+                throw new Error('AI返回的数据解析后不是一个JSON数组。');
             }
 
             for (const entry of newGeneratedEntries) {
@@ -1207,16 +1206,16 @@ ${wholeBookContent}
                 await createLorebookEntry(bookName, entryForCreation);
             }
             alert(
-                `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`
+                `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`,
             );
-            momoDesignerResponse.val("上传成功！可以开始下一次设计了。");
+            momoDesignerResponse.val('上传成功！可以开始下一次设计了。');
         } catch (error) {
             console.error(`[${extensionName}] 上传故事内容失败:`, error);
             alert(
-                `上传失败: ${error.message}\n\n请检查“AI 设计的故事条目”框中的内容是否为合法的JSON数组。`
+                `上传失败: ${error.message}\n\n请检查“AI 设计的故事条目”框中的内容是否为合法的JSON数组。`,
             );
             // 失败后重新启用按钮
-            momoUploadDesignerBtn.prop("disabled", false).text("上传到世界书");
+            momoUploadDesignerBtn.prop('disabled', false).text('上传到世界书');
         }
     }
 
@@ -1233,23 +1232,23 @@ ${wholeBookContent}
             const books = await tavernHelperApi.getLorebooks();
             worldbookListContainer.empty(); // 清空
             if (books.length === 0) {
-                worldbookListContainer.append("<p>没有找到世界书。</p>");
+                worldbookListContainer.append('<p>没有找到世界书。</p>');
                 return;
             }
             books.forEach((bookName) => {
-                const bookButton = $("<button></button>")
-                    .addClass("momo-book-button") // 修正：使用正确的、可切换的按钮样式
+                const bookButton = $('<button></button>')
+                    .addClass('momo-book-button') // 修正：使用正确的、可切换的按钮样式
                     .text(bookName)
-                    .attr("data-book-name", bookName)
-                    .on("click", function () {
-                        $(this).toggleClass("selected"); // 使用 .selected 类来标记选中
+                    .attr('data-book-name', bookName)
+                    .on('click', function () {
+                        $(this).toggleClass('selected'); // 使用 .selected 类来标记选中
                         loadEntriesForSelectedBooks();
                     });
                 worldbookListContainer.append(bookButton);
             });
         } catch (error) {
             console.error(`[${extensionName}] 加载世界书列表失败:`, error);
-            toastr.error("加载世界书列表失败。");
+            toastr.error('加载世界书列表失败。');
         }
         // 初始时清空条目区
         loadEntriesForSelectedBooks();
@@ -1262,38 +1261,37 @@ ${wholeBookContent}
         constantEntriesContainer.empty();
         normalEntriesContainer.empty();
         const selectedBookButtons = worldbookListContainer.find(
-            ".momo-book-button.selected"
+            '.momo-book-button.selected',
         );
 
         if (selectedBookButtons.length === 0) {
             constantEntriesContainer.html(
-                '<p class="momo-no-tasks">请先在上方选择一个或多个世界书。</p>'
+                '<p class="momo-no-tasks">请先在上方选择一个或多个世界书。</p>',
             );
-            normalEntriesContainer.html("");
+            normalEntriesContainer.html('');
             return;
         }
 
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
             for (const button of selectedBookButtons) {
-                const bookName = $(button).data("book-name");
-                const entries = await tavernHelperApi.getLorebookEntries(
-                    bookName
-                );
+                const bookName = $(button).data('book-name');
+                const entries =
+                    await tavernHelperApi.getLorebookEntries(bookName);
 
                 entries.forEach((entry) => {
-                    const entryButton = $("<button></button>")
-                        .addClass("momo-book-button") // 修正：使用正确的、可切换的按钮样式
+                    const entryButton = $('<button></button>')
+                        .addClass('momo-book-button') // 修正：使用正确的、可切换的按钮样式
                         .text(entry.comment)
-                        .attr("title", entry.comment) // 悬浮显示全名
-                        .attr("data-uid", entry.uid)
-                        .attr("data-book-name", bookName)
-                        .on("click", function () {
-                            $(this).toggleClass("selected");
+                        .attr('title', entry.comment) // 悬浮显示全名
+                        .attr('data-uid', entry.uid)
+                        .attr('data-book-name', bookName)
+                        .on('click', function () {
+                            $(this).toggleClass('selected');
                         });
 
                     // 根据类型分类
-                    if (entry.type === "constant") {
+                    if (entry.type === 'constant') {
                         constantEntriesContainer.append(entryButton);
                     } else {
                         normalEntriesContainer.append(entryButton);
@@ -1301,19 +1299,19 @@ ${wholeBookContent}
                 });
             }
             // 如果加载完条目后容器仍然是空的，显示提示
-            if (constantEntriesContainer.children("button").length === 0) {
+            if (constantEntriesContainer.children('button').length === 0) {
                 constantEntriesContainer.html(
-                    '<p class="momo-no-tasks">无蓝灯条目。</p>'
+                    '<p class="momo-no-tasks">无蓝灯条目。</p>',
                 );
             }
-            if (normalEntriesContainer.children("button").length === 0) {
+            if (normalEntriesContainer.children('button').length === 0) {
                 normalEntriesContainer.html(
-                    '<p class="momo-no-tasks">无绿灯条目。</p>'
+                    '<p class="momo-no-tasks">无绿灯条目。</p>',
                 );
             }
         } catch (error) {
             console.error(`[${extensionName}] 加载条目失败:`, error);
-            toastr.error("加载条目失败。");
+            toastr.error('加载条目失败。');
         }
     }
 
@@ -1322,20 +1320,20 @@ ${wholeBookContent}
      */
     async function handleDeleteWorldbooks() {
         const selectedBookButtons = worldbookListContainer.find(
-            ".momo-book-button.selected"
+            '.momo-book-button.selected',
         );
         if (selectedBookButtons.length === 0) {
-            toastr.warning("请先选择要删除的世界书。");
+            toastr.warning('请先选择要删除的世界书。');
             return;
         }
 
         const bookNamesToDelete = selectedBookButtons
-            .map((_, btn) => $(btn).data("book-name"))
+            .map((_, btn) => $(btn).data('book-name'))
             .get();
 
         if (
             confirm(
-                `确定要永久删除选中的 ${bookNamesToDelete.length} 个世界书吗？此操作不可撤销！`
+                `确定要永久删除选中的 ${bookNamesToDelete.length} 个世界书吗？此操作不可撤销！`,
             )
         ) {
             try {
@@ -1344,11 +1342,11 @@ ${wholeBookContent}
                 for (const bookName of bookNamesToDelete) {
                     await tavernHelperApi.deleteLorebook(bookName);
                 }
-                toastr.success("选中的世界书已成功删除。");
+                toastr.success('选中的世界书已成功删除。');
                 renderDeleteView(); // 重新渲染
             } catch (error) {
                 console.error(`[${extensionName}] 删除世界书失败:`, error);
-                toastr.error("删除世界书失败。");
+                toastr.error('删除世界书失败。');
             }
         }
     }
@@ -1358,17 +1356,17 @@ ${wholeBookContent}
      */
     async function handleDeleteEntries() {
         const selectedEntries = $(
-            "#constant-entries-container .momo-book-button.selected, #normal-entries-container .momo-book-button.selected"
+            '#constant-entries-container .momo-book-button.selected, #normal-entries-container .momo-book-button.selected',
         );
         if (selectedEntries.length === 0) {
-            toastr.warning("请先选择要删除的条目。");
+            toastr.warning('请先选择要删除的条目。');
             return;
         }
 
         const entriesToDeleteByBook = {};
         selectedEntries.each((_, block) => {
-            const bookName = $(block).data("book-name");
-            const uid = parseInt($(block).data("uid"), 10);
+            const bookName = $(block).data('book-name');
+            const uid = parseInt($(block).data('uid'), 10);
             if (!entriesToDeleteByBook[bookName]) {
                 entriesToDeleteByBook[bookName] = [];
             }
@@ -1377,7 +1375,7 @@ ${wholeBookContent}
 
         if (
             confirm(
-                `确定要永久删除选中的 ${selectedEntries.length} 个条目吗？此操作不可撤销！`
+                `确定要永久删除选中的 ${selectedEntries.length} 个条目吗？此操作不可撤销！`,
             )
         ) {
             try {
@@ -1387,11 +1385,11 @@ ${wholeBookContent}
                     const uids = entriesToDeleteByBook[bookName];
                     await tavernHelperApi.deleteLorebookEntries(bookName, uids);
                 }
-                toastr.success("选中的条目已成功删除。");
+                toastr.success('选中的条目已成功删除。');
                 loadEntriesForSelectedBooks(); // 重新加载条目
             } catch (error) {
                 console.error(`[${extensionName}] 删除条目失败:`, error);
-                toastr.error("删除条目失败。");
+                toastr.error('删除条目失败。');
             }
         }
     }
@@ -1405,7 +1403,7 @@ ${wholeBookContent}
      */
     async function populateTransferSelects() {
         momoSourceEntriesContainer.html(
-            '<p class="momo-no-tasks">请先选择一个源世界书。</p>'
+            '<p class="momo-no-tasks">请先选择一个源世界书。</p>',
         ); // 重置
         try {
             const books = await getAllLorebooks();
@@ -1415,14 +1413,17 @@ ${wholeBookContent}
 
             books.forEach((book) => {
                 const option = `<option value="${escapeHtml(
-                    book.file_name
+                    book.file_name,
                 )}">${escapeHtml(book.name)}</option>`;
                 momoSourceWorldbookSelect.append(option);
                 momoTargetWorldbookSelect.append(option);
             });
         } catch (error) {
-            console.error(`[${extensionName}] 填充迁移视图下拉菜单失败:`, error);
-            toastr.error("加载世界书列表失败。");
+            console.error(
+                `[${extensionName}] 填充迁移视图下拉菜单失败:`,
+                error,
+            );
+            toastr.error('加载世界书列表失败。');
         }
     }
 
@@ -1433,23 +1434,24 @@ ${wholeBookContent}
         const sourceBook = momoSourceWorldbookSelect.val();
         if (!sourceBook) {
             momoSourceEntriesContainer.html(
-                '<p class="momo-no-tasks">请先选择一个源世界书。</p>'
+                '<p class="momo-no-tasks">请先选择一个源世界书。</p>',
             );
             return;
         }
 
-        momoSourceEntriesContainer.html("<p>加载中...</p>");
+        momoSourceEntriesContainer.html('<p>加载中...</p>');
         try {
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
-            const entries = await tavernHelperApi.getLorebookEntries(sourceBook);
+            const entries =
+                await tavernHelperApi.getLorebookEntries(sourceBook);
 
             // 将条目数据缓存起来，以便迁移时使用
-            momoSourceEntriesContainer.data("entries", entries);
+            momoSourceEntriesContainer.data('entries', entries);
 
             momoSourceEntriesContainer.empty();
             if (entries.length === 0) {
                 momoSourceEntriesContainer.html(
-                    '<p class="momo-no-tasks">该世界书没有条目。</p>'
+                    '<p class="momo-no-tasks">该世界书没有条目。</p>',
                 );
                 return;
             }
@@ -1457,23 +1459,20 @@ ${wholeBookContent}
             // 使用带复选框的标签来展示条目，方便多选
             entries.forEach((entry) => {
                 const entryId = `momo-transfer-entry-${entry.uid}`;
-                const displayName =
-                    entry.comment || `条目 UID: ${entry.uid}`;
+                const displayName = entry.comment || `条目 UID: ${entry.uid}`;
                 const entryElement = $(`
                     <div class="momo-checkbox-item">
                         <input type="checkbox" id="${entryId}" value="${entry.uid}">
-                        <label for="${entryId}">${escapeHtml(
-                    displayName
-                )}</label>
+                        <label for="${entryId}">${escapeHtml(displayName)}</label>
                     </div>
                 `);
                 momoSourceEntriesContainer.append(entryElement);
             });
         } catch (error) {
             console.error(`[${extensionName}] 加载源条目失败:`, error);
-            toastr.error("加载源世界书的条目失败。");
+            toastr.error('加载源世界书的条目失败。');
             momoSourceEntriesContainer.html(
-                '<p style="color:red;">加载条目失败！</p>'
+                '<p style="color:red;">加载条目失败！</p>',
             );
         }
     }
@@ -1491,26 +1490,26 @@ ${wholeBookContent}
 
         // 1. 验证
         if (!sourceBook || !targetBook) {
-            toastr.warning("请选择源世界书和目标世界书。");
+            toastr.warning('请选择源世界书和目标世界书。');
             return;
         }
         if (sourceBook === targetBook) {
-            toastr.warning("源世界书和目标世界书不能是同一个。");
+            toastr.warning('源世界书和目标世界书不能是同一个。');
             return;
         }
         if (selectedEntryUids.length === 0) {
-            toastr.warning("请至少选择一个要迁移的条目。");
+            toastr.warning('请至少选择一个要迁移的条目。');
             return;
         }
 
-        momoTransferEntriesBtn.prop("disabled", true).text("迁移中...");
+        momoTransferEntriesBtn.prop('disabled', true).text('迁移中...');
 
         try {
             // 2. 获取源条目数据
             const allSourceEntries =
-                momoSourceEntriesContainer.data("entries") || [];
+                momoSourceEntriesContainer.data('entries') || [];
             const entriesToTransfer = allSourceEntries.filter((entry) =>
-                selectedEntryUids.includes(String(entry.uid))
+                selectedEntryUids.includes(String(entry.uid)),
             );
 
             if (!tavernHelperApi) tavernHelperApi = await waitForTavernHelper();
@@ -1526,22 +1525,22 @@ ${wholeBookContent}
             }
 
             toastr.success(
-                `成功将 ${entriesToTransfer.length} 个条目从 "${
-                    momoSourceWorldbookSelect.find("option:selected").text()
-                }" 迁移到 "${
-                    momoTargetWorldbookSelect.find("option:selected").text()
-                }"！`
+                `成功将 ${entriesToTransfer.length} 个条目从 "${momoSourceWorldbookSelect
+                    .find('option:selected')
+                    .text()}" 迁移到 "${momoTargetWorldbookSelect
+                    .find('option:selected')
+                    .text()}"！`,
             );
 
             // 迁移成功后，可以考虑清空选择
             momoSourceEntriesContainer
                 .find('input[type="checkbox"]:checked')
-                .prop("checked", false);
+                .prop('checked', false);
         } catch (error) {
             console.error(`[${extensionName}] 迁移条目失败:`, error);
             toastr.error(`迁移失败: ${error.message}`);
         } finally {
-            momoTransferEntriesBtn.prop("disabled", false).text("执行迁移");
+            momoTransferEntriesBtn.prop('disabled', false).text('执行迁移');
         }
     }
 
@@ -1550,8 +1549,8 @@ ${wholeBookContent}
     // -----------------------------------------------------------------
     async function initializeExtension() {
         // 1. 动态加载CSS
-        $("head").append(
-            `<link rel="stylesheet" type="text/css" href="${extensionFolderPath}/style.css">`
+        $('head').append(
+            `<link rel="stylesheet" type="text/css" href="${extensionFolderPath}/style.css">`,
         );
 
         // 2. 加载 HTML
@@ -1560,118 +1559,118 @@ ${wholeBookContent}
                 $.get(`${extensionFolderPath}/settings.html`),
                 $.get(`${extensionFolderPath}/popup.html`),
             ]);
-            $("#extensions_settings2").append(settingsHtml);
-            $("body").append(popupHtml);
+            $('#extensions_settings2').append(settingsHtml);
+            $('body').append(popupHtml);
         } catch (error) {
             console.error(
                 `[${extensionName}] Failed to load HTML files.`,
-                error
+                error,
             );
             return; // 无法加载HTML，中止初始化
         }
 
         // 2. 获取 DOM 引用
         // -- 主要视图
-        mainView = $("#momo-main-view");
-        selectView = $("#momo-select-view");
-        modifyView = $("#momo-modify-view");
-        generatorView = $("#momo-generator-view");
-        designerView = $("#momo-designer-view");
-        deleteView = $("#momo-delete-view");
-        transferView = $("#momo-transfer-view"); // 新增
-        bookList = $("#momo-book-list");
-        presetListContainer = $("#momo-preset-list-container");
+        mainView = $('#momo-main-view');
+        selectView = $('#momo-select-view');
+        modifyView = $('#momo-modify-view');
+        generatorView = $('#momo-generator-view');
+        designerView = $('#momo-designer-view');
+        deleteView = $('#momo-delete-view');
+        transferView = $('#momo-transfer-view'); // 新增
+        bookList = $('#momo-book-list');
+        presetListContainer = $('#momo-preset-list-container');
         overlay = $(`#${OVERLAY_ID}`);
 
         // -- 全局区按钮
-        selectBookBtn = $("#momo-select-book-btn");
-        loadPresetBtn = $("#momo-load-preset-btn");
-        savePresetBtn = $("#momo-save-preset-btn");
+        selectBookBtn = $('#momo-select-book-btn');
+        loadPresetBtn = $('#momo-load-preset-btn');
+        savePresetBtn = $('#momo-save-preset-btn');
 
         // -- 编辑区控件
-        editWorldbookSelect = $("#momo-edit-worldbook-select");
-        editActionsContainer = $("#momo-edit-actions-container");
-        gotoModifyBtn = $("#momo-goto-modify-btn");
-        gotoDeleteBtn = $("#momo-goto-delete-btn");
-        gotoGeneratorBtn = $("#momo-goto-generator-btn");
-        gotoDesignerBtn = $("#momo-goto-designer-btn");
-        gotoTransferBtn = $("#momo-goto-transfer-btn"); // 新增
+        editWorldbookSelect = $('#momo-edit-worldbook-select');
+        editActionsContainer = $('#momo-edit-actions-container');
+        gotoModifyBtn = $('#momo-goto-modify-btn');
+        gotoDeleteBtn = $('#momo-goto-delete-btn');
+        gotoGeneratorBtn = $('#momo-goto-generator-btn');
+        gotoDesignerBtn = $('#momo-goto-designer-btn');
+        gotoTransferBtn = $('#momo-goto-transfer-btn'); // 新增
 
         // -- "修改条目"子页面控件
-        momoWorldbookSelect = $("#momo-worldbook-select");
-        momoEntrySelect = $("#momo-entry-select");
-        momoUserPrompt = $("#momo-user-prompt");
-        momoAiResponse = $("#momo-ai-response");
-        momoSubmitModificationBtn = $("#momo-submit-modification-btn");
-        momoSelectedEntryContent = $("#momo-selected-entry-content");
-        momoSaveManualChangesBtn = $("#momo-save-manual-changes-btn");
+        momoWorldbookSelect = $('#momo-worldbook-select');
+        momoEntrySelect = $('#momo-entry-select');
+        momoUserPrompt = $('#momo-user-prompt');
+        momoAiResponse = $('#momo-ai-response');
+        momoSubmitModificationBtn = $('#momo-submit-modification-btn');
+        momoSelectedEntryContent = $('#momo-selected-entry-content');
+        momoSaveManualChangesBtn = $('#momo-save-manual-changes-btn');
 
         // -- "世界生成器"子页面控件
-        momoGeneratorPrompt = $("#momo-generator-prompt");
-        momoGeneratorResponse = $("#momo-generator-response");
-        momoSubmitGeneratorBtn = $("#momo-submit-generator-btn");
-        momoUploadGeneratorBtn = $("#momo-upload-generator-btn");
+        momoGeneratorPrompt = $('#momo-generator-prompt');
+        momoGeneratorResponse = $('#momo-generator-response');
+        momoSubmitGeneratorBtn = $('#momo-submit-generator-btn');
+        momoUploadGeneratorBtn = $('#momo-upload-generator-btn');
 
         // -- "故事设计师"子页面控件
-        momoDesignerPrompt = $("#momo-designer-prompt");
-        momoDesignerResponse = $("#momo-designer-response");
-        momoSubmitDesignerBtn = $("#momo-submit-designer-btn");
-        momoUploadDesignerBtn = $("#momo-upload-designer-btn");
+        momoDesignerPrompt = $('#momo-designer-prompt');
+        momoDesignerResponse = $('#momo-designer-response');
+        momoSubmitDesignerBtn = $('#momo-submit-designer-btn');
+        momoUploadDesignerBtn = $('#momo-upload-designer-btn');
 
         // -- "条目迁移"子页面控件
-        momoSourceWorldbookSelect = $("#momo-source-worldbook-select");
-        momoTargetWorldbookSelect = $("#momo-target-worldbook-select");
-        momoSourceEntriesContainer = $("#momo-source-entries-container");
-        momoTransferEntriesBtn = $("#momo-transfer-entries-btn");
+        momoSourceWorldbookSelect = $('#momo-source-worldbook-select');
+        momoTargetWorldbookSelect = $('#momo-target-worldbook-select');
+        momoSourceEntriesContainer = $('#momo-source-entries-container');
+        momoTransferEntriesBtn = $('#momo-transfer-entries-btn');
 
         // 3. 绑定事件
         // -- 弹窗控制
         // 修复移动端关闭按钮可能不触发 click 事件的问题，同时绑定 'click' 和 'touchend'
-        $(`#${CLOSE_BUTTON_ID}`).on("click touchend", closePopup);
-        overlay.on("click", function (event) {
+        $(`#${CLOSE_BUTTON_ID}`).on('click touchend', closePopup);
+        overlay.on('click', function (event) {
             if (event.target === this) closePopup();
         });
-        $(`#${POPUP_ID}`).on("click", (e) => e.stopPropagation());
+        $(`#${POPUP_ID}`).on('click', (e) => e.stopPropagation());
 
         // -- 主视图 > 全局区
-        selectBookBtn.on("click", () => showSubView("momo-select-view"));
-        loadPresetBtn.on("click", () => presetListContainer.slideToggle());
+        selectBookBtn.on('click', () => showSubView('momo-select-view'));
+        loadPresetBtn.on('click', () => presetListContainer.slideToggle());
 
         // -- 主视图 > 编辑区
-        editWorldbookSelect.on("change", function () {
+        editWorldbookSelect.on('change', function () {
             const isBookSelected = !!$(this).val();
-            editActionsContainer.toggleClass("momo-disabled", !isBookSelected);
+            editActionsContainer.toggleClass('momo-disabled', !isBookSelected);
             editActionsContainer
-                .find("button")
-                .prop("disabled", !isBookSelected);
+                .find('button')
+                .prop('disabled', !isBookSelected);
         });
 
         // -- 删除视图相关
-        worldbookListContainer = $("#worldbook-list-container");
-        deleteWorldbookBtn = $("#delete-worldbook-btn");
-        constantEntriesContainer = $("#constant-entries-container");
-        normalEntriesContainer = $("#normal-entries-container");
-        deleteEntryBtn = $("#delete-entry-btn");
+        worldbookListContainer = $('#worldbook-list-container');
+        deleteWorldbookBtn = $('#delete-worldbook-btn');
+        constantEntriesContainer = $('#constant-entries-container');
+        normalEntriesContainer = $('#normal-entries-container');
+        deleteEntryBtn = $('#delete-entry-btn');
 
         // -- 各子页面的返回按钮 (使用事件委托)
-        $(".momo-popup-body").on(
-            "click",
-            ".momo-back-to-main-btn",
-            showMainView
+        $('.momo-popup-body').on(
+            'click',
+            '.momo-back-to-main-btn',
+            showMainView,
         );
 
         // -- "选择世界书(全局)" 子页面的保存按钮
-        savePresetBtn.on("click", async () => {
-            const presetName = prompt("请输入方案名称：");
-            if (!presetName || presetName.trim() === "") {
-                alert("名称不能为空！");
+        savePresetBtn.on('click', async () => {
+            const presetName = prompt('请输入方案名称：');
+            if (!presetName || presetName.trim() === '') {
+                alert('名称不能为空！');
                 return;
             }
-            const selectedBooks = $(".momo-book-button.selected")
-                .map((_, el) => $(el).data("book-filename"))
+            const selectedBooks = $('.momo-book-button.selected')
+                .map((_, el) => $(el).data('book-filename'))
                 .get();
             if (selectedBooks.length === 0) {
-                alert("请至少选择一个世界书！");
+                alert('请至少选择一个世界书！');
                 return;
             }
             savePreset({ name: presetName, books: selectedBooks });
@@ -1680,43 +1679,43 @@ ${wholeBookContent}
         });
 
         // -- 功能按钮导航到各子页面
-        gotoModifyBtn.on("click", () => showSubView("momo-modify-view"));
-        gotoDeleteBtn.on("click", () => {
-            showSubView("momo-delete-view");
+        gotoModifyBtn.on('click', () => showSubView('momo-modify-view'));
+        gotoDeleteBtn.on('click', () => {
+            showSubView('momo-delete-view');
             renderDeleteView(); // 渲染删除页面
         });
-        gotoGeneratorBtn.on("click", () => showSubView("momo-generator-view"));
-        gotoDesignerBtn.on("click", () => showSubView("momo-designer-view"));
-        gotoTransferBtn.on("click", () => showSubView("momo-transfer-view")); // 新增
+        gotoGeneratorBtn.on('click', () => showSubView('momo-generator-view'));
+        gotoDesignerBtn.on('click', () => showSubView('momo-designer-view'));
+        gotoTransferBtn.on('click', () => showSubView('momo-transfer-view')); // 新增
 
         // -- "修改条目" 子页面的事件绑定
-        momoWorldbookSelect.on("change", populateEntrySelect);
-        momoEntrySelect.on("change", handleEntrySelectionChange);
-        momoSubmitModificationBtn.on("click", handleSubmitModification);
-        momoSaveManualChangesBtn.on("click", handleManualSave);
+        momoWorldbookSelect.on('change', populateEntrySelect);
+        momoEntrySelect.on('change', handleEntrySelectionChange);
+        momoSubmitModificationBtn.on('click', handleSubmitModification);
+        momoSaveManualChangesBtn.on('click', handleManualSave);
 
         // -- "条目迁移" 子页面的事件绑定
-        momoSourceWorldbookSelect.on("change", renderSourceEntries);
-        momoTransferEntriesBtn.on("click", handleTransferEntries);
+        momoSourceWorldbookSelect.on('change', renderSourceEntries);
+        momoTransferEntriesBtn.on('click', handleTransferEntries);
 
         // -- 删除视图的事件绑定
-        deleteWorldbookBtn.on("click", handleDeleteWorldbooks);
-        deleteEntryBtn.on("click", handleDeleteEntries);
+        deleteWorldbookBtn.on('click', handleDeleteWorldbooks);
+        deleteEntryBtn.on('click', handleDeleteEntries);
 
         // -- "世界生成器" 子页面的事件绑定
-        momoSubmitGeneratorBtn.on("click", handleGenerateWorld);
-        momoUploadGeneratorBtn.on("click", handleUploadWorld);
+        momoSubmitGeneratorBtn.on('click', handleGenerateWorld);
+        momoUploadGeneratorBtn.on('click', handleUploadWorld);
 
         // -- "故事设计师" 子页面的事件绑定
-        momoSubmitDesignerBtn.on("click", handleGenerateStory);
-        momoUploadDesignerBtn.on("click", handleUploadStory);
+        momoSubmitDesignerBtn.on('click', handleGenerateStory);
+        momoUploadDesignerBtn.on('click', handleUploadStory);
 
         // -- 浮动按钮开关
-        const isEnabled = localStorage.getItem(STORAGE_KEY_ENABLED) !== "false";
-        $(TOGGLE_ID).prop("checked", isEnabled);
-        $(document).on("change", TOGGLE_ID, function () {
-            localStorage.setItem(STORAGE_KEY_ENABLED, $(this).is(":checked"));
-            $(this).is(":checked")
+        const isEnabled = localStorage.getItem(STORAGE_KEY_ENABLED) !== 'false';
+        $(TOGGLE_ID).prop('checked', isEnabled);
+        $(document).on('change', TOGGLE_ID, function () {
+            localStorage.setItem(STORAGE_KEY_ENABLED, $(this).is(':checked'));
+            $(this).is(':checked')
                 ? initializeFloatingButton()
                 : destroyFloatingButton();
         });
@@ -1729,8 +1728,8 @@ ${wholeBookContent}
         showMainView(); // 默认显示主视图
 
         // 绑定设置面板中的更新按钮事件
-        $("#momo-check-update-button").on("click", () =>
-            Updater.checkForUpdates(true)
+        $('#momo-check-update-button').on('click', () =>
+            Updater.checkForUpdates(true),
         );
         // 页面加载时静默检查更新
         Updater.checkForUpdates(false);
