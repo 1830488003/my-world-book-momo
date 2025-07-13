@@ -12,7 +12,7 @@
     --border-color: #40444b;
     --font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     --border-radius: 8px;
-    --box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+    --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 /* --- 浮动按钮 --- */
@@ -29,18 +29,23 @@
     justify-content: center;
     color: var(--primary-accent-color);
     font-size: 24px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3), 
-                inset 0 2px 2px rgba(255,255,255,0.05),
-                0 0 0 1px rgba(0,0,0,0.5);
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, color 0.2s ease-out;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 2px 2px rgba(255, 255, 255, 0.05),
+        0 0 0 1px rgba(0, 0, 0, 0.5);
+    transition:
+        transform 0.2s ease-out,
+        box-shadow 0.2s ease-out,
+        color 0.2s ease-out;
 }
 
 #momo-world-book-button:hover {
     transform: scale(1.1);
     color: var(--primary-accent-hover-color);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4), 
-                inset 0 2px 3px rgba(255,255,255,0.08),
-                0 0 10px var(--primary-accent-color); /* Glow effect */
+    box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.4),
+        inset 0 2px 3px rgba(255, 255, 255, 0.08),
+        0 0 10px var(--primary-accent-color); /* Glow effect */
 }
 
 /* --- 弹窗容器与布局 (参考 quest-system-extension 的响应式方案) --- */
@@ -63,14 +68,14 @@
     width: 80vw; /* 调整：宽度为80vw */
     height: 80vh; /* 调整：高度为80vh */
     max-height: 80vh; /* 调整：与height保持一致 */
-    
+
     background-color: var(--main-bg-color);
     color: var(--text-color);
     font-family: var(--font-family);
-    
+
     display: flex;
     flex-direction: column;
-    
+
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     border: 1px solid var(--border-color);
@@ -126,8 +131,8 @@
 }
 .momo-popup-body,
 .momo-book-list-container {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
 
 /* --- 区块样式 --- */
@@ -140,7 +145,9 @@
     gap: 12px;
 }
 
-.momo-section h3, .momo-section h4, .momo-section h5 {
+.momo-section h3,
+.momo-section h4,
+.momo-section h5 {
     margin: 0;
     font-size: 1.2em;
     color: var(--primary-accent-color);
@@ -150,13 +157,14 @@
     align-items: center;
     gap: 8px;
 }
-.momo-section h4, .momo-section h5 {
+.momo-section h4,
+.momo-section h5 {
     font-size: 1.1em;
     color: var(--text-color);
     border-bottom: none;
 }
 .momo-section h5 {
-    font-size: 1.0em;
+    font-size: 1em;
     color: var(--text-muted-color);
     margin-top: 10px;
 }
@@ -178,7 +186,9 @@
     cursor: pointer;
     font-size: 0.9em;
     font-weight: 500;
-    transition: background-color 0.2s, transform 0.1s;
+    transition:
+        background-color 0.2s,
+        transform 0.1s;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -192,7 +202,9 @@
     transform: scale(0.98);
 }
 
-.momo-button.abandon { background-color: var(--danger-color); }
+.momo-button.abandon {
+    background-color: var(--danger-color);
+}
 
 .momo-button:disabled {
     background-color: var(--border-color);
@@ -215,13 +227,15 @@
 }
 
 /* --- momo 特有元素的兼容性样式 --- */
-.momo-edit-controls, .momo-modify-controls {
+.momo-edit-controls,
+.momo-modify-controls {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.momo-select, .momo-textarea {
+.momo-select,
+.momo-textarea {
     width: 100%;
     padding: 10px;
     background-color: var(--main-bg-color);
@@ -274,7 +288,10 @@
     padding: 8px 12px;
     border-radius: 15px; /* 胶囊形状 */
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    transition:
+        background-color 0.2s,
+        color 0.2s,
+        border-color 0.2s;
     /* 新增样式以显示完整文本 */
     white-space: normal; /* 允许文本换行 */
     text-align: left; /* 文本左对齐 */
@@ -341,8 +358,8 @@
     display: none;
 }
 #momo-source-entries-container {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
 
 /* 复选框项目样式 */
@@ -360,7 +377,7 @@
     background-color: var(--main-bg-color);
 }
 
-.momo-checkbox-item input[type="checkbox"] {
+.momo-checkbox-item input[type='checkbox'] {
     /* 自定义复选框外观，使其更现代化 */
     appearance: none;
     -webkit-appearance: none;
@@ -370,16 +387,18 @@
     border-radius: 4px;
     cursor: pointer;
     position: relative;
-    transition: background-color 0.2s, border-color 0.2s;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
 }
 
-.momo-checkbox-item input[type="checkbox"]:checked {
+.momo-checkbox-item input[type='checkbox']:checked {
     background-color: var(--primary-accent-color);
     border-color: var(--primary-accent-hover-color);
 }
 
 /* 在选中的复选框上添加一个对勾符号 */
-.momo-checkbox-item input[type="checkbox"]:checked::after {
+.momo-checkbox-item input[type='checkbox']:checked::after {
     content: '✔';
     font-size: 14px;
     color: white;
