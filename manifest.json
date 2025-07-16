@@ -1,11 +1,11 @@
 {
-    "display_name": "我的世界书（默默作品）",
-    "loading_order": 1001,
-    "requires": [],
-    "optional": [],
-    "js": "index.js",
-    "css": "style.css",
-    "author": "默默",
-    "version": "0.2.1",
-    "homePage": "https://github.com/1830488003/my-world-book-momo"
+  "display_name": "我的世界书（默默作品）",
+  "loading_order": 1001,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "默默",
+  "version": "0.2.2",
+  "homePage": "https://github.com/1830488003/my-world-book-momo"
 }
