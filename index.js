@@ -758,74 +758,57 @@ jQuery(async () => {
         }
     }
 
-    /**
-     * 从AI返回的文本中提取和清理JSON字符串。
-     * 增强版：能处理content字段内未转义的引号和换行符。
-     * @param {string} rawText AI的原始输出
-     * @returns {string} 清理后的、更可能合法的JSON字符串
-     */
     function extractAndCleanJson(rawText) {
-        if (!rawText || typeof rawText !== 'string') {
-            return '';
-        }
+        if (!rawText || typeof rawText !== 'string') return '';
 
-        // 1. 提取被 ```json ... ``` 包裹的代码块，如果失败则使用原始文本
+        // 1. 从Markdown代码块或原始文本中提取JSON字符串
         const match = rawText.match(/```json\s*([\s\S]*?)\s*```/);
         let jsonString = match ? match[1] : rawText;
-
-        // 2. 如果没有匹配到代码块，尝试粗略提取 [ ... ] 或 { ... } 之间的内容
         if (!match) {
             const firstBracket = jsonString.indexOf('[');
             const lastBracket = jsonString.lastIndexOf(']');
-            const firstBrace = jsonString.indexOf('{');
-            const lastBrace = jsonString.lastIndexOf('}');
-
             if (firstBracket !== -1 && lastBracket > firstBracket) {
-                jsonString = jsonString.substring(
-                    firstBracket,
-                    lastBracket + 1,
-                );
-            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
-                jsonString = jsonString.substring(firstBrace, lastBrace + 1);
-            } else {
-                // 如果找不到有效的JSON结构，可能无法修复，返回空字符串
-                return '';
+                jsonString = jsonString.substring(firstBracket, lastBracket + 1);
             }
         }
+        jsonString = jsonString.trim();
 
-        // 3. 关键修复步骤：修复 `content` 字段内部的非法字符
-        // 这个问题的核心是 `content` 的值是一个字符串，但其内部可能包含未转义的 " 和换行符。
-        // 我们通过正则表达式匹配 "content": "..." 结构，并只对 ... 部分进行转义。
-        // 正则表达式解释:
-        // ("content"\s*:\s*") - 匹配 "content": " 部分，允许空格
-        // ([\s\S]*?) - 非贪婪地匹配任何字符（包括换行符），这是 content 的值
-        // (",\s*$) - 匹配行尾的逗号（可选），以确定 content 值的结束
-        // m (multiline) 和 g (global) 标志是必须的
-        try {
-            // 使用一个更复杂的正则表达式，它查找 "content": "..." 直到下一个有效的 "key": 或结束的 }
-            // 这是一个简化的逻辑，它按行处理，假设 content 字段的值不会跨越多行（在原始JSON文本中）
-            // 如果 content 值包含 `\n`，它在文本中仍然是一行。
-            const lines = jsonString.split('\n');
-            const fixedLines = lines.map((line) => {
-                // 匹配像 "key": "value" 这样的行
-                const match = line.match(/(\s*".*?"\s*:\s*")(.*?)(".*)/);
-                if (match && match[1].includes('"content"')) {
-                    let value = match[2];
-                    // 对值进行转义：
-                    // 1. 先转义反斜杠本身
-                    // 2. 再转义双引号
-                    value = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-                    return match[1] + value + match[3];
-                }
-                return line;
-            });
-            jsonString = fixedLines.join('\n');
-        } catch (e) {
-            console.error('JSON auto-fixing failed:', e);
-            // 如果修复失败，返回原始提取的字符串，让后续逻辑处理
+        // 2. "治愈"JSON：通过正则表达式查找所有 "content": "..." 结构
+        // 并仅在其内部的字符串值中，将未转义的换行符和回车符替换为转义形式
+        const healedJsonString = jsonString.replace(/"content":\s*"((?:[^"\\]|\\.)*)"/g, (match, contentValue) => {
+            // 对捕获到的 content 字符串值进行处理
+            const escapedContent = contentValue
+                .replace(/\n/g, '\\n') // 转义换行符
+                .replace(/\r/g, '\\r'); // 转义回车符
+            // 重构 "content": "..." 部分
+            return `"${'content'}": "${escapedContent}"`;
+        });
+
+        return healedJsonString;
+    }
+
+    function sanitizeEntry(entry) {
+        // 定义世界书条目允许的字段白名单
+        const allowedKeys = [
+            'key',
+            'keys',
+            'comment',
+            'content',
+            'type',
+            'position',
+            'depth',
+            'prevent_recursion',
+            'order',
+            'uid',
+        ];
+        const sanitized = {};
+        // 遍历白名单，只保留entry中存在的、且在白名单内的字段
+        for (const key of allowedKeys) {
+            if (Object.hasOwn(entry, key)) {
+                sanitized[key] = entry[key];
+            }
         }
-
-        return jsonString.trim();
+        return sanitized;
     }
 
     /**
@@ -1151,9 +1134,10 @@ ${wholeBookContent}
             }
 
             for (const entry of newGeneratedEntries) {
-                const entryForCreation = { ...entry };
-                delete entryForCreation.uid;
-                await createLorebookEntry(bookName, entryForCreation);
+                const sanitizedEntry = sanitizeEntry(entry);
+                // 确保 uid 不存在，让 Tavern 自动生成
+                delete sanitizedEntry.uid; 
+                await createLorebookEntry(bookName, sanitizedEntry);
             }
             alert(
                 `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`,
@@ -1201,9 +1185,10 @@ ${wholeBookContent}
             }
 
             for (const entry of newGeneratedEntries) {
-                const entryForCreation = { ...entry };
-                delete entryForCreation.uid;
-                await createLorebookEntry(bookName, entryForCreation);
+                const sanitizedEntry = sanitizeEntry(entry);
+                // 确保 uid 不存在，让 Tavern 自动生成
+                delete sanitizedEntry.uid;
+                await createLorebookEntry(bookName, sanitizedEntry);
             }
             alert(
                 `成功上传 ${newGeneratedEntries.length} 个新条目到世界书 "${bookName}"！`,
